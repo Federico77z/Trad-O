@@ -1,0 +1,779 @@
+/* Core Sci-Fi Biochemistry Design System */
+:root {
+    --bg-color: #080a14;
+    --panel-bg: rgba(13, 17, 34, 0.75);
+    --panel-border: rgba(0, 240, 255, 0.18);
+    --panel-border-active: rgba(0, 240, 255, 0.4);
+    --font-tech: 'Orbitron', monospace;
+    --font-sans: 'Inter', sans-serif;
+    
+    /* Neon Colors */
+    --cyan: #00f0ff;
+    --cyan-glow: 0 0 10px rgba(0, 240, 255, 0.5);
+    --magenta: #ff007f;
+    --magenta-glow: 0 0 10px rgba(255, 0, 127, 0.5);
+    --green: #39ff14;
+    --green-glow: 0 0 10px rgba(57, 255, 20, 0.5);
+    --orange: #ff5e00;
+    --orange-glow: 0 0 10px rgba(255, 94, 0, 0.5);
+    --yellow: #ffd700;
+    --yellow-glow: 0 0 10px rgba(255, 215, 0, 0.5);
+    
+    /* Nucleotides */
+    --color-a: #2eff5f; /* Neon Green */
+    --color-u: #ff3131; /* Neon Red/Orange */
+    --color-g: #00e5ff; /* Neon Cyan */
+    --color-c: #ffea00; /* Neon Yellow */
+    
+    /* Amino Acids */
+    --aa-met: #00f0ff;
+    --aa-val: #a020f0;
+    --aa-phe: #ff007f;
+    --aa-pro: #ff5e00;
+    --aa-lys: #ffd700;
+    --aa-asp: #ff3333;
+    --aa-ser: #00ff66;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-color);
+    background-image: 
+        radial-gradient(circle at 50% 50%, rgba(16, 24, 48, 0.5) 0%, rgba(8, 10, 20, 1) 100%),
+        linear-gradient(rgba(18, 24, 45, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(18, 24, 45, 0.1) 1px, transparent 1px);
+    background-size: 100% 100%, 30px 30px, 30px 30px;
+    color: #e0e5ff;
+    font-family: var(--font-sans);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Container */
+#game-container {
+    width: 100%;
+    max-width: 1300px;
+    height: 95vh;
+    min-height: 700px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Glass Panels */
+.hud-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hud-panel:hover {
+    border-color: rgba(0, 240, 255, 0.25);
+    box-shadow: 0 8px 36px 0 rgba(0, 240, 255, 0.05);
+}
+
+/* Header HUD styling */
+.header-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    height: 85px;
+    flex-shrink: 0;
+}
+
+.logo-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.protein-target-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+    font-family: var(--font-tech);
+}
+
+.protein-target-info .label {
+    font-size: 0.55rem;
+    color: var(--cyan);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+#target-protein-name {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #fff;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+#target-protein-org {
+    font-size: 0.55rem;
+    color: rgba(224, 229, 255, 0.4);
+    font-style: italic;
+}
+
+.game-title {
+    font-family: var(--font-tech);
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    background: linear-gradient(90deg, #00f0ff, #ff007f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.3));
+}
+
+.subtitle {
+    font-size: 0.65rem;
+    font-family: var(--font-tech);
+    color: rgba(224, 229, 255, 0.5);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Polypeptide Chain */
+.protein-chain-hud {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    max-width: 50%;
+    margin: 0 30px;
+}
+
+.protein-chain-hud .label {
+    font-size: 0.65rem;
+    font-family: var(--font-tech);
+    color: var(--cyan);
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.chain-list {
+    position: relative;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(0, 240, 255, 0.1);
+    border-radius: 4px;
+    height: 40px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: hidden;
+}
+
+.chain-list .placeholder-text {
+    font-size: 0.75rem;
+    color: rgba(224, 229, 255, 0.35);
+    font-style: italic;
+}
+
+/* Amino acid node in chain */
+.aa-node {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 12px;
+    font-family: var(--font-tech);
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 6px rgba(0,0,0,0.5);
+    animation: node-enter 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.aa-node::after {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.4);
+    margin-left: 6px;
+    margin-right: -4px;
+}
+
+.aa-node:last-child::after {
+    display: none;
+}
+
+@keyframes node-enter {
+    from {
+        opacity: 0;
+        transform: scale(0.3) translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateX(0);
+    }
+}
+
+/* Stats Header Area */
+.stats-area {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.stat-box .label {
+    font-size: 0.6rem;
+    font-family: var(--font-tech);
+    color: rgba(224, 229, 255, 0.5);
+    letter-spacing: 1px;
+}
+
+.stat-box .value {
+    font-family: var(--font-tech);
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+/* Glowing text classes */
+.text-glow {
+    color: #fff;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), var(--cyan-glow);
+}
+.text-glow-cyan {
+    color: var(--cyan);
+    text-shadow: var(--cyan-glow);
+}
+
+/* Main Layout Grid */
+.main-layout {
+    display: flex;
+    flex-grow: 1;
+    gap: 15px;
+    overflow: hidden;
+    height: calc(100% - 100px);
+}
+
+/* Side Panels */
+.side-panel {
+    width: 250px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.side-panel h2 {
+    font-family: var(--font-tech);
+    font-size: 0.95rem;
+    color: var(--cyan);
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+    padding-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.panel-desc {
+    font-size: 0.7rem;
+    color: rgba(224, 229, 255, 0.6);
+    line-height: 1.4;
+    margin-bottom: 15px;
+}
+
+/* Reference Table styling */
+.table-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+.reference-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+.reference-table th {
+    font-family: var(--font-tech);
+    color: rgba(224, 229, 255, 0.4);
+    text-align: left;
+    padding: 6px 4px;
+    border-bottom: 1px solid rgba(224, 229, 255, 0.1);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+}
+
+.reference-table td {
+    padding: 8px 4px;
+    border-bottom: 1px solid rgba(224, 229, 255, 0.05);
+}
+
+/* Highlight matching rows in chart */
+.reference-table tr.active-target {
+    background: rgba(0, 240, 255, 0.1);
+    border-left: 2px solid var(--cyan);
+}
+
+/* Nucleotide bases representation */
+.base-a { color: var(--color-a); font-weight: bold; text-shadow: 0 0 3px rgba(46, 255, 95, 0.3); }
+.base-u { color: var(--color-u); font-weight: bold; text-shadow: 0 0 3px rgba(255, 49, 49, 0.3); }
+.base-g { color: var(--color-g); font-weight: bold; text-shadow: 0 0 3px rgba(0, 229, 255, 0.3); }
+.base-c { color: var(--color-c); font-weight: bold; text-shadow: 0 0 3px rgba(255, 234, 0, 0.3); }
+
+/* Amino Acid Tag */
+.aa-tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--font-tech);
+    font-size: 0.65rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+.aa-met { background: rgba(0, 240, 255, 0.25); border: 1px solid var(--aa-met); }
+.aa-phe { background: rgba(255, 0, 127, 0.25); border: 1px solid var(--aa-phe); }
+.aa-val { background: rgba(160, 32, 240, 0.25); border: 1px solid var(--aa-val); }
+.aa-pro { background: rgba(255, 94, 0, 0.25); border: 1px solid var(--aa-pro); }
+.aa-lys { background: rgba(255, 215, 0, 0.25); border: 1px solid var(--aa-lys); }
+.aa-asp:not(.aa-node) { background: rgba(255, 51, 51, 0.25); border: 1px solid var(--aa-asp); }
+.aa-ser { background: rgba(0, 255, 102, 0.25); border: 1px solid var(--aa-ser); }
+
+.complementarity-hint {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 240, 255, 0.1);
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 0.65rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.complementarity-hint .title {
+    font-family: var(--font-tech);
+    color: rgba(224, 229, 255, 0.4);
+}
+
+.complementarity-hint .pair {
+    font-family: var(--font-tech);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Center Panel (Canvas Container) */
+.canvas-container {
+    flex-grow: 1;
+    position: relative;
+    border: 1px solid var(--panel-border);
+    background: #04050a;
+    border-radius: 8px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#game-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 800px;
+    max-height: 600px;
+    background: transparent;
+}
+
+/* Overlays (Start/Gameover Screen) */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(4, 5, 10, 0.85);
+    backdrop-filter: blur(15px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: opacity 0.5s ease;
+}
+
+.overlay.active {
+    display: flex;
+}
+
+.overlay-content {
+    text-align: center;
+    max-width: 420px;
+    padding: 35px;
+    background: rgba(10, 14, 28, 0.9);
+    border: 1px solid var(--panel-border-active);
+    border-radius: 12px;
+    box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.title-pulsate {
+    font-family: var(--font-tech);
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 6px;
+    color: #fff;
+    text-shadow: 0 0 15px rgba(0, 240, 255, 0.6), var(--cyan-glow);
+    animation: title-glow 2s infinite alternate;
+}
+
+@keyframes title-glow {
+    from {
+        text-shadow: 0 0 10px rgba(0, 240, 255, 0.4), 0 0 20px rgba(0, 240, 255, 0.2);
+    }
+    to {
+        text-shadow: 0 0 20px rgba(0, 240, 255, 0.8), 0 0 35px rgba(0, 240, 255, 0.5), 0 0 50px rgba(0, 240, 255, 0.3);
+    }
+}
+
+.instructions-card {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(224, 229, 255, 0.1);
+    border-radius: 6px;
+    padding: 15px;
+    text-align: left;
+}
+
+.instructions-card h3 {
+    font-size: 0.85rem;
+    color: var(--cyan);
+    margin-bottom: 8px;
+    font-family: var(--font-tech);
+}
+
+.instructions-card ul {
+    font-size: 0.75rem;
+    color: rgba(224, 229, 255, 0.75);
+    padding-left: 15px;
+    line-height: 1.5;
+}
+
+.instructions-card li {
+    margin-bottom: 5px;
+}
+
+.glow-button {
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: var(--font-tech);
+    font-weight: bold;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-shadow: var(--cyan-glow);
+    box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.2), 0 0 10px rgba(0, 240, 255, 0.1);
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+.glow-button:hover {
+    background: var(--cyan);
+    color: #000;
+    text-shadow: none;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+    transform: translateY(-2px);
+}
+
+.glow-button:active {
+    transform: translateY(1px);
+}
+
+/* Gameover Overlay styling */
+.alert-text {
+    font-family: var(--font-tech);
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--magenta);
+    text-shadow: var(--magenta-glow);
+    letter-spacing: 1px;
+}
+
+.alert-btn {
+    border-color: var(--magenta);
+    color: var(--magenta);
+    text-shadow: var(--magenta-glow);
+    box-shadow: inset 0 0 10px rgba(255, 0, 127, 0.2), 0 0 10px rgba(255, 0, 127, 0.1);
+}
+
+.alert-btn:hover {
+    background: var(--magenta);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
+}
+
+.final-stats {
+    font-family: var(--font-tech);
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+/* Right Side Panel: Info/Controls Panel */
+.info-panel {
+    width: 260px;
+}
+
+.integrity-box {
+    margin-bottom: 20px;
+}
+
+.integrity-box .label {
+    font-size: 0.65rem;
+    font-family: var(--font-tech);
+    color: rgba(224, 229, 255, 0.5);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.progress-bar-container {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 4px;
+    height: 14px;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 6px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #00f0ff, #00ff66);
+    box-shadow: 0 0 8px rgba(0, 255, 102, 0.5);
+    transition: width 0.3s ease, background 0.3s ease;
+}
+
+.progress-bar.warning {
+    background: linear-gradient(90deg, #ffd700, #ff5e00);
+    box-shadow: 0 0 8px rgba(255, 94, 0, 0.5);
+}
+
+.progress-bar.critical {
+    background: linear-gradient(90deg, #ff5e00, #ff3131);
+    box-shadow: 0 0 10px rgba(255, 49, 49, 0.8);
+    animation: bar-blink 0.5s infinite alternate;
+}
+
+@keyframes bar-blink {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+}
+
+#integrity-text {
+    font-size: 0.6rem;
+    font-family: var(--font-tech);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.status-ok { color: var(--green); text-shadow: var(--green-glow); }
+.status-warning { color: var(--orange); text-shadow: var(--orange-glow); }
+.status-critical { color: var(--magenta); text-shadow: var(--magenta-glow); }
+
+.controls-box {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(224, 229, 255, 0.05);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 20px;
+}
+
+.controls-box h3 {
+    font-size: 0.75rem;
+    font-family: var(--font-tech);
+    color: var(--cyan);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.control-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+}
+
+.key {
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: var(--font-tech);
+    font-weight: bold;
+    color: var(--cyan);
+}
+
+.control-row .action {
+    color: rgba(224, 229, 255, 0.75);
+}
+
+.options-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.control-button {
+    flex: 1;
+    background: rgba(13, 17, 34, 0.6);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 4px;
+    color: #e0e5ff;
+    font-family: var(--font-tech);
+    font-size: 0.65rem;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.control-button:hover {
+    background: rgba(0, 240, 255, 0.15);
+    border-color: var(--cyan);
+    color: #fff;
+}
+
+/* Feed Box / Telemetry Log */
+.feed-box {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.feed-box h3 {
+    font-size: 0.75rem;
+    font-family: var(--font-tech);
+    color: var(--cyan);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.log-entries {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(224, 229, 255, 0.08);
+    border-radius: 4px;
+    padding: 10px;
+    flex-grow: 1;
+    overflow-y: auto;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    scroll-behavior: smooth;
+}
+
+.log-entry {
+    line-height: 1.3;
+    animation: fade-in 0.3s ease forwards;
+}
+
+.system-msg {
+    color: rgba(224, 229, 255, 0.4);
+}
+
+.success-msg {
+    color: var(--green);
+}
+
+.error-msg {
+    color: var(--magenta);
+}
+
+.level-msg {
+    color: var(--yellow);
+    font-weight: bold;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.aa-empty {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed rgba(224, 229, 255, 0.15);
+    color: rgba(224, 229, 255, 0.25);
+    box-shadow: none;
+}
+
+.aa-filled {
+    animation: node-bounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.aa-pulse-target {
+    border: 2px solid var(--target-glow-color, var(--yellow)) !important;
+    color: #02050f !important;
+    background: var(--target-glow-color, var(--yellow)) !important;
+    font-weight: 900 !important;
+    text-shadow: none !important;
+    transform-origin: center;
+    animation: pulse-border 1.0s infinite ease-in-out !important;
+    z-index: 10;
+}
+
+@keyframes pulse-border {
+    0% {
+        box-shadow: 0 0 4px var(--target-glow-color, rgba(255, 234, 0, 0.4));
+        transform: scale(1.0);
+    }
+    50% {
+        box-shadow: 0 0 24px var(--target-glow-color, rgba(255, 234, 0, 1));
+        transform: scale(1.3);
+    }
+    100% {
+        box-shadow: 0 0 4px var(--target-glow-color, rgba(255, 234, 0, 0.4));
+        transform: scale(1.0);
+    }
+}
+
+@keyframes node-bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}

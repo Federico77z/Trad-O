@@ -1,0 +1,142 @@
+[
+    {
+        "name": "defensin-6 preproprotein",
+        "organism": "Homo sapiens",
+        "accession": "NP_001917.1",
+        "sequence": "MRTLTILTAVLLVALQAKAEPLQAEDDPLQAKAYEADAQEQRGANDQDFAVSFAEDASSSLRALGSTRAFTCHCRRSCYSTEYSYGTCTVMGINHRFCCL",
+        "length": 100
+    },
+    {
+        "name": "pancreatic polypeptide prohormone isoform 2 precursor",
+        "organism": "Homo sapiens",
+        "accession": "NP_001306138.1",
+        "sequence": "MCDCDLMAAARLCLSLLLLSTCVALLLQPLLGAQGAPLEPVYPGDNATPEQMAQYAADLRRYINMLTRPRYGKRHKEDTLAFSEWGSPHAAVPRELSPLDL",
+        "length": 101
+    },
+    {
+        "name": "TYRO protein tyrosine kinase-binding protein isoform 3 precursor",
+        "organism": "Homo sapiens",
+        "accession": "NP_001166985.1",
+        "sequence": "MGGLEPCSRLLLLPLLLAVSDCSCSTVSPGVLAGIVMGDLVLTVLIALAVYFLGRLVPRGRGAAEAATRKQRITETESPYQELQGQRSDVYSDLNTQRPYYK",
+        "length": 102
+    },
+    {
+        "name": "matrix Gla protein isoform 2 preproprotein",
+        "organism": "Homo sapiens",
+        "accession": "NP_000891.2",
+        "sequence": "MKSLILLAILAALAVVTLCYESHESMESYELNPFINRRNANTFISPQQRWRAKVQERIRERSKPVHELNREACDDYRLCERYAMVYGYNAAYNRYFRKRRGTK",
+        "length": 103
+    },
+    {
+        "name": "transmembrane protein 138 isoform 2",
+        "organism": "Homo sapiens",
+        "accession": "NP_001317210.1",
+        "sequence": "MFFNTFVFQAGLVNLLFHKFKGTIILTAVYFALSISLHVWVMNLRWKNSNSFIWTDGLQMLFVFQRLAAVLYCYFYKRTAVRLGDPHFYQDSLWLRKEFMQVRR",
+        "length": 104
+    },
+    {
+        "name": "CKLF-like MARVEL transmembrane domain-containing protein 5 isoform d",
+        "organism": "Homo sapiens",
+        "accession": "NP_001275673.1",
+        "sequence": "MLSARDRRDRHPEEGVVAELQGFAVDKAFLTSHKGILLETELDFLRCVSAIIIFLVVSFAAVTSRDGAAIAAFVFGIILVSIFAYDAFKIYRTEMAPGASQGDQQ",
+        "length": 105
+    },
+    {
+        "name": "cyclic AMP-dependent transcription factor ATF-3 isoform 5",
+        "organism": "Homo sapiens",
+        "accession": "NP_001193415.1",
+        "sequence": "MMLQHPGQVSASEEELRFAIQNKHLCHRMSSALESVTVSDRPLGVSITKAEVAPEEDERKKRRRERNKIAAAKCRNKKKEKTECLQKLPRPFWVQKTCIWAVDSCK",
+        "length": 106
+    },
+    {
+        "name": "TIM double twin CX3C motif protein isoform 4",
+        "organism": "Homo sapiens",
+        "accession": "NP_001316686.1",
+        "sequence": "MFRCSASCCEDSQASMKQVHQCIERCHVPLAQAQALVTSELEKFQDRLARCTMHCNDKAKDSIDAGSKELQVKQQLDSCVTKCVDDHMHLIPTMTKKMKEALLSIGK",
+        "length": 107
+    },
+    {
+        "name": "trafficking protein particle complex subunit 2-like protein isoform 9",
+        "organism": "Homo sapiens",
+        "accession": "NP_001305461.1",
+        "sequence": "MGISCDSRLPHFSKVRAHRGPSTGSPCVTSAFPNQLCRYGYVTNSKVKFVMVVDSSNTALRDNEIRSMFRKLHNSYTDVMCNPFYNPGDRIQSRAFDNMVTSMMIQVC",
+        "length": 108
+    },
+    {
+        "name": "microfibrillar-associated protein 5 isoform e precursor",
+        "organism": "Homo sapiens",
+        "accession": "NP_001284641.1",
+        "sequence": "MSLLGPKVLLFLAAFIITSDWIPLGVNSQRGDDVTQATPETFTEDPNLVNDPATDETVLAVLADIAPSTDDLDELCRQMAGLPPRRLRRSNYFRLPPCENVDLQRPNGL",
+        "length": 109
+    },
+    {
+        "name": "trafficking protein particle complex subunit 2-like protein isoform 6",
+        "organism": "Homo sapiens",
+        "accession": "NP_001305457.1",
+        "sequence": "MVHTSLDVVDEKISAMGKALVDQRELYLGLLYPTEDYKVYGYVTNSKVKFVMVVDSSNTALRDNEIRSMFRKLHNSYTDVMCNPFYNPGDRIQSSRAFDNMVTSMMIQVC",
+        "length": 110
+    },
+    {
+        "name": "coiled-coil and C2 domain-containing protein 2A isoform c",
+        "organism": "Homo sapiens",
+        "accession": "NP_001158192.1",
+        "sequence": "MNPREEKVKIITEEFIENDEDADMGRQNKNSKVRRQPRKKQPPTAVPKEMVSEKSHLGNPQEPVQEEPKTRLLSMTVRRGPRRELVVKKSLGRPGTVTHVCNPSTLEGRGG",
+        "length": 111
+    },
+    {
+        "name": "serine-protein kinase ATM isoform b",
+        "organism": "Homo sapiens",
+        "accession": "NP_001338764.1",
+        "sequence": "MSLVLNDLLICCRQLEHDRATERKKEVEKFKRLIRDPETIKHLDRHSDSKQGKYLNWDAVFRFLQKYIQKETECLRIAKPNVSASTQASRQKKMQEISSLVKYFIKCANRSK",
+        "length": 112
+    },
+    {
+        "name": "ubiquitin-conjugating enzyme E2 H isoform 3",
+        "organism": "Homo sapiens",
+        "accession": "NP_001189427.1",
+        "sequence": "MNKIFHPNIDEASGTVCLDVINQTWTALYDLTNIFESFLPQLLAYPNPIDPLNGDAAAMYLHRPEEYKQKIKEYIQKYATEEALKEQEEGTGDSSSESSMSDFSEDEAQDMEL",
+        "length": 113
+    },
+    {
+        "name": "NTF2-related export protein 2 isoform 3",
+        "organism": "Homo sapiens",
+        "accession": "NP_001229547.1",
+        "sequence": "MDKRRRALTRLYLDKATLIWNGNAVSGLDALNNFFDTLPSSEFQVNMLDCQPVHEQATQSQTTVLVVTSGTVKFDGNKQHFFNQNFLLTAQSTPNNTVWKIASDCFRFQDWSSS",
+        "length": 114
+    },
+    {
+        "name": "trafficking protein particle complex subunit 2-like protein isoform 5",
+        "organism": "Homo sapiens",
+        "accession": "NP_001305456.1",
+        "sequence": "MGISCDSRLPHFSKVRAHRGPSTGSPCVTSAFPNQLCRYGYVTNSKVKFVMVVDSSNTALRDNEIRSMFRKLHNSYTDVMCNPFYNPGDRIQSSGSVSLSRAFDNMVTSMMIQVC",
+        "length": 115
+    },
+    {
+        "name": "glycoprotein hormones alpha chain isoform 2 precursor",
+        "organism": "Homo sapiens",
+        "accession": "NP_000726.1",
+        "sequence": "MDYYRKYAAIFLVTLSVFLHVLHSAPDVQDCPECTLQENPFFSQPGAPILQCMGCCFSRAYPTPLRSKKTMLVQKNVTSESTCCVAKSYNRVTVMGGFKVENHTACHCSTCYYHKS",
+        "length": 116
+    },
+    {
+        "name": "phosphomevalonate kinase isoform 4",
+        "organism": "Homo sapiens",
+        "accession": "NP_001335625.1",
+        "sequence": "MSVLSSGSLVHSRNSMLRKIVEGISQPIWLVSDTRRVSDIQWFREAYGAVTQTVRVVALEQSRQQRGWVFTPGVDDAESECGLDNFGDFDWVIENHGVEQRLEEQLENLIEFIRSRL",
+        "length": 117
+    },
+    {
+        "name": "cyclin-dependent kinase 2-interacting protein isoform 2",
+        "organism": "Homo sapiens",
+        "accession": "NP_001306975.1",
+        "sequence": "MEAKTLGTVTPRKPVLSVSARKIKDNAADWHNLILKWETLNDAGFTTANNIANLKISLLNKDKIELDSSSPASKENEEKVCLEYNEELEKLCEELQATLDGLMRFRISSWRCTGRSCS",
+        "length": 118
+    },
+    {
+        "name": "TRAF family member-associated NF-kappa-B activator isoform b",
+        "organism": "Homo sapiens",
+        "accession": "NP_597841.1",
+        "sequence": "MDKNIGEQLNKAYEAFRQACMDRDSAVKELQQKTENYEQRIREQQEQLSLQQTIIDKLKSQLLLVNSTQDNNYGCVPLLEDSETRKNNLTLDQPQDKVISGIAREKLPKVDIASAESSI",
+        "length": 119
+    }
+]

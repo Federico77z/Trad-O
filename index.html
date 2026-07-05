@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trad-O: The Protein Translation Game</title>
+    <!-- Google Fonts for futuristic & clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Header HUD -->
+        <header class="hud-panel header-hud">
+            <div class="logo-area">
+                <h1 class="game-title">TRAD-O</h1>
+                <span class="subtitle">Ribosomal Translation Protocol</span>
+                <div class="protein-target-info">
+                    <span class="label">Target:</span>
+                    <span id="target-protein-name">-</span>
+                    <span id="target-protein-org">-</span>
+                </div>
+            </div>
+            
+            <!-- Polypeptide Chain Visualizer -->
+            <div class="protein-chain-hud">
+                <span class="label">Polypeptide Chain: <span id="hud-residue-counter" style="color: var(--yellow); font-weight: bold; margin-left: 5px;">0 / 100</span> residues completed</span>
+                <div id="chain-container" class="chain-list">
+                    <span class="placeholder-text">Synthesizing...</span>
+                </div>
+            </div>
+
+            <div class="stats-area">
+                <div class="stat-box">
+                    <span class="label">SCORE</span>
+                    <span id="score-val" class="value text-glow">00000</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">LEVEL</span>
+                    <span id="level-val" class="value text-glow-cyan">1</span>
+                </div>
+                <div class="stat-box">
+                    <span class="label">HIGH SCORE</span>
+                    <span id="highscore-val" class="value">00000</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Body -->
+        <div class="main-layout">
+            <!-- Left Sidebar: Codon Reference Chart -->
+            <aside class="hud-panel side-panel reference-panel">
+                <h2>Codon Reference</h2>
+                <p class="panel-desc">Match the falling tRNA's Anticodon with the complementary Codon on the scrolling mRNA at the bottom.</p>
+                <div class="table-container">
+                    <table class="reference-table">
+                        <thead>
+                            <tr>
+                                <th>tRNA (Anticodon)</th>
+                                <th>mRNA (Codon)</th>
+                                <th>Amino Acid</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-codon="AUG">
+                                <td><span class="base-u">U</span><span class="base-a">A</span><span class="base-c">C</span></td>
+                                <td><span class="base-a">A</span><span class="base-u">U</span><span class="base-g">G</span></td>
+                                <td><span class="aa-tag aa-met">Met</span></td>
+                            </tr>
+                            <tr data-codon="UUU">
+                                <td><span class="base-a">A</span><span class="base-a">A</span><span class="base-a">A</span></td>
+                                <td><span class="base-u">U</span><span class="base-u">U</span><span class="base-u">U</span></td>
+                                <td><span class="aa-tag aa-phe">Phe</span></td>
+                            </tr>
+                            <tr data-codon="GUC">
+                                <td><span class="base-c">C</span><span class="base-a">A</span><span class="base-g">G</span></td>
+                                <td><span class="base-g">G</span><span class="base-u">U</span><span class="base-c">C</span></td>
+                                <td><span class="aa-tag aa-val">Val</span></td>
+                            </tr>
+                            <tr data-codon="CCA">
+                                <td><span class="base-g">G</span><span class="base-g">G</span><span class="base-u">U</span></td>
+                                <td><span class="base-c">C</span><span class="base-c">C</span><span class="base-a">A</span></td>
+                                <td><span class="aa-tag aa-pro">Pro</span></td>
+                            </tr>
+                            <tr data-codon="AAA">
+                                <td><span class="base-u">U</span><span class="base-u">U</span><span class="base-u">U</span></td>
+                                <td><span class="base-a">A</span><span class="base-a">A</span><span class="base-a">A</span></td>
+                                <td><span class="aa-tag aa-lys">Lys</span></td>
+                            </tr>
+                            <tr data-codon="GAC">
+                                <td><span class="base-c">C</span><span class="base-u">U</span><span class="base-g">G</span></td>
+                                <td><span class="base-g">G</span><span class="base-a">A</span><span class="base-c">C</span></td>
+                                <td><span class="aa-tag aa-asp">Asp</span></td>
+                            </tr>
+                            <tr data-codon="UCG">
+                                <td><span class="base-a">A</span><span class="base-g">G</span><span class="base-c">C</span></td>
+                                <td><span class="base-u">U</span><span class="base-c">C</span><span class="base-g">G</span></td>
+                                <td><span class="aa-tag aa-ser">Ser</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="complementarity-hint">
+                    <span class="title">BONDING RULES:</span>
+                    <span class="pair">A &harr; U</span>
+                    <span class="pair">G &harr; C</span>
+                </div>
+            </aside>
+
+            <!-- Center: Game Board Canvas -->
+            <main class="canvas-container">
+                <canvas id="game-canvas" width="800" height="600"></canvas>
+                
+                <!-- Overlay Menus (Start, Game Over, Paused) -->
+                <div id="start-overlay" class="overlay active">
+                    <div class="overlay-content">
+                        <h2 class="title-pulsate">TRAD-O</h2>
+                        <p class="subtitle">Translation Initiative Protocol</p>
+                        <div class="instructions-card">
+                            <h3>Mission Parameters:</h3>
+                            <ul>
+                                <li>Control the falling <strong>tRNA</strong> at the top.</li>
+                                <li>Aim at the complementary moving <strong>mRNA codon</strong> below.</li>
+                                <li>Align them correctly to add the amino acid cargo to the protein chain.</li>
+                                <li>Mismatches or missed codons drain ribosomal energy (shield/health).</li>
+                            </ul>
+                        </div>
+                        <button id="start-btn" class="glow-button">Initialize Protocol</button>
+                    </div>
+                </div>
+
+                <div id="gameover-overlay" class="overlay">
+                    <div class="overlay-content">
+                        <h2 class="alert-text">TRANSCRIPTION TERMINATED</h2>
+                        <p class="subtitle">Ribosome integrity depleted</p>
+                        <div class="final-stats">
+                            <p>Final Score: <span id="final-score" class="text-glow">0</span></p>
+                            <p>Residues Completed: <span id="final-length" class="text-glow-cyan">0</span> aa</p>
+                        </div>
+                        <button id="restart-btn" class="glow-button alert-btn">Re-Initialize Protocol</button>
+                    </div>
+                </div>
+
+                <div id="levelcomplete-overlay" class="overlay">
+                    <div class="overlay-content">
+                        <h2 class="title-pulsate" style="color: var(--green); text-shadow: var(--green-glow);">PROTEIN SYNTHESIZED!</h2>
+                        <p class="subtitle">Translation successful</p>
+                        <div class="final-stats">
+                            <p>Protein: <span id="completed-protein-name" style="color: #fff; font-size: 0.85rem;">Protein Name</span></p>
+                            <p>Organism: <span id="completed-protein-org" style="color: var(--cyan); font-size: 0.75rem;">Organism</span></p>
+                            <p>Completed residues: <span id="completed-protein-len" style="color: var(--yellow);">100/100</span> aa</p>
+                        </div>
+                        <button id="next-level-btn" class="glow-button" style="border-color: var(--green); color: var(--green); text-shadow: var(--green-glow); margin-top: 10px;">Next Synthesis Protocol</button>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar: Interactive panel -->
+            <aside class="hud-panel side-panel info-panel">
+                <h2>Ribosome Core</h2>
+                
+                <!-- Ribosome integrity meter (Lives / Health) -->
+                <div class="integrity-box">
+                    <span class="label">RIBOSOME INTEGRITY:</span>
+                    <div class="progress-bar-container">
+                        <div id="integrity-bar" class="progress-bar" style="width: 100%;"></div>
+                    </div>
+                    <span id="integrity-text" class="status-ok">SYSTEMS NOMINAL</span>
+                </div>
+
+                <div class="controls-box">
+                    <h3>Manual Controls</h3>
+                    <div class="control-grid">
+                        <div class="control-row">
+                            <span class="key">&larr;</span> / <span class="key">&rarr;</span>
+                            <span class="action">Move Left / Right</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="key">&darr;</span> / <span class="key">Space</span>
+                            <span class="action">Drop tRNA</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="key">Mouse / Drag</span>
+                            <span class="action">Move &amp; Click to Drop</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="key">P</span>
+                            <span class="action">Pause / Resume</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="options-box">
+                    <button id="audio-toggle" class="control-button">🔊 Mute Audio</button>
+                    <button id="pause-btn" class="control-button">Pause System</button>
+                </div>
+
+                <!-- Live translation feed -->
+                <div class="feed-box">
+                    <h3>Telemetry Log</h3>
+                    <div id="telemetry-log" class="log-entries">
+                        <div class="log-entry system-msg">&gt; Ribosome ready. Waiting for input...</div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
