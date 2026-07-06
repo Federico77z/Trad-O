@@ -1566,6 +1566,10 @@ function startGame() {
     level = 1;
     highScore = parseInt(localStorage.getItem('trado_highscore') || '0', 10);
     
+    // Clear telemetry log box
+    const logBox = document.getElementById('telemetry-log');
+    if (logBox) logBox.innerHTML = '';
+    
     document.getElementById('score-val').textContent = "00000";
     document.getElementById('highscore-val').textContent = String(highScore).padStart(5, '0');
     
