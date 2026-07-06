@@ -1853,9 +1853,40 @@ function togglePause() {
     }
 }
 
+async function loadProteinsList() {
+    if (window.location.protocol === 'file:') {
+        console.log("Trad-O: Running via file:// protocol. Using embedded proteins database.");
+        return;
+    }
+    
+    try {
+        const response = await fetch('proteins.json');
+        if (response.ok) {
+            const list = await response.json();
+            if (Array.isArray(list) && list.length > 0) {
+                // Validate schema formatting of custom list items
+                const isValid = list.every(p => p.name && p.organism && p.sequence && typeof p.length === 'number');
+                if (isValid) {
+                    // Overwrite the embedded const array in place
+                    PROTEINS_LIST.length = 0;
+                    list.forEach(p => PROTEINS_LIST.push(p));
+                    console.log(`Trad-O: Successfully loaded ${list.length} custom proteins from proteins.json.`);
+                } else {
+                    console.warn("Trad-O: proteins.json formatting is invalid. Falling back to embedded database.");
+                }
+            }
+        }
+    } catch (err) {
+        console.log("Trad-O: Could not fetch proteins.json, falling back to embedded database.", err);
+    }
+}
+
 // 13. INITIALIZATION
-window.onload = () => {
+window.onload = async () => {
     setupControls();
+    
+    // Attempt to load external proteins list if running on a server
+    await loadProteinsList();
     
     targetProtein = PROTEINS_LIST[0];
     neededCounts = {};
