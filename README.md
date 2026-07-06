@@ -77,7 +77,7 @@ Competitive local scoreboard stored in the browser's `localStorage`:
 
 1. Open a terminal and navigate to the project directory:
    ```bash
-   cd "/Users/federicozambelli/Desktop/Prove Antigravity/Trad-O"
+   cd path/to/trad-o
    ```
 2. Start a static local HTTP server:
    ```bash
