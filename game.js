@@ -379,6 +379,13 @@ let sortedAAs = []; // Required amino acids sorted by frequency in target sequen
 let activeAnnouncement = null;
 let lastMilestoneReached = 0;
 
+// Dev Mode & Demo Variables
+let isAutoMode = false;
+let isDemoMode = false;
+let lastInputTime = Date.now();
+let keyBuffer = '';
+let aiTargetBlock = null;
+
 // Entities
 let mrnaChain = [];
 let activeTRNA = null;
@@ -1013,6 +1020,84 @@ function triggerMilestone(progress) {
     spawnExplosion(canvas.width / 2 + 120, canvas.height / 2, '#2eff5f', 25);
 }
 
+function resetIdleTimer() {
+    lastInputTime = Date.now();
+}
+
+function exitDemoMode() {
+    isAutoMode = false;
+    isDemoMode = false;
+    gameState = 'START';
+    
+    // Reset overlays
+    document.getElementById('start-overlay').classList.add('active');
+    document.getElementById('gameover-overlay').classList.remove('active');
+    document.getElementById('levelcomplete-overlay').classList.remove('active');
+    
+    // Clear entities
+    particles = [];
+    aminoAcidProjectiles = [];
+    activeTRNA = null;
+    translationProgress = 0;
+    
+    // Reinitialize starting mRNA chain
+    initMRNA();
+    
+    logMsg("AUTO MODE: Demonstration terminated. Returning to start menu.", "system");
+    resetIdleTimer();
+}
+
+function runAI(dt) {
+    if (!activeTRNA) {
+        aiTargetBlock = null;
+        return;
+    }
+    
+    // Verify target sanity (reset if translated or scrolled off)
+    if (aiTargetBlock && (aiTargetBlock.translated || aiTargetBlock.x < -codonWidth)) {
+        aiTargetBlock = null;
+    }
+    
+    const expectedAnticodon = activeTRNA.anticodon;
+    
+    if (!aiTargetBlock) {
+        const candidates = mrnaChain.filter(block => !block.translated && getComplementaryCodon(block.codon) === expectedAnticodon);
+        
+        // 15% error rate: intentionally pick a mismatched codon block if rolls true
+        if (Math.random() < 0.15 && mrnaChain.length > 0) {
+            const mismatchCandidates = mrnaChain.filter(block => !block.translated && getComplementaryCodon(block.codon) !== expectedAnticodon);
+            if (mismatchCandidates.length > 0) {
+                aiTargetBlock = mismatchCandidates[Math.floor(Math.random() * mismatchCandidates.length)];
+            } else {
+                aiTargetBlock = mrnaChain[Math.floor(Math.random() * mrnaChain.length)];
+            }
+        } else if (candidates.length > 0) {
+            aiTargetBlock = candidates[0];
+        }
+    }
+    
+    if (aiTargetBlock) {
+        // Calculate aiming position based on landing time
+        const timeToLand = (mRNAY - activeTRNA.y) / fallSpeedDrop;
+        const blockTargetCenterX = aiTargetBlock.x + aiTargetBlock.width / 2 - mrnaSpeed * timeToLand;
+        
+        // Steer tRNA to align centers
+        const targetTRNAX = blockTargetCenterX - tRNAWidth / 2;
+        activeTRNA.targetX = targetTRNAX;
+        
+        // Trigger quick drop when aligned
+        const trnaCenterX = activeTRNA.x + tRNAWidth / 2;
+        if (Math.abs(trnaCenterX - blockTargetCenterX) < 12 && !activeTRNA.quickDropping) {
+            activeTRNA.speedY = fallSpeedDrop;
+            activeTRNA.quickDropping = true;
+            aiTargetBlock = null; // Reset target
+        }
+    } else {
+        // Safe default position
+        activeTRNA.targetX = canvas.width / 2 - tRNAWidth / 2;
+    }
+}
+
 function triggerLevelComplete() {
     gameState = 'LEVEL_COMPLETE';
     sfx.playLevelUp();
@@ -1183,7 +1268,22 @@ function drawHUDGraphics(dt) {
 
 // 11. GAME LOOPS
 function update(dt) {
+    // If on the start menu, check for 30s idle demo trigger
+    if (gameState === 'START') {
+        if (Date.now() - lastInputTime > 30000) {
+            isAutoMode = true;
+            isDemoMode = true;
+            logMsg("AUTO MODE: Idle timeout. Initializing translation protocol demonstration.", "system");
+            
+            document.getElementById('start-overlay').classList.remove('active');
+            startGame();
+        }
+    }
+
     if (gameState === 'PLAYING') {
+        if (isAutoMode) {
+            runAI(dt);
+        }
         const dtScale = dt / 16.667;
         updateMRNA(dt);
         checkAndRefreshReferenceTable(); // Refresh table dynamically on remaining targets
@@ -1262,6 +1362,19 @@ function draw(dt) {
         
         ctx.restore();
     }
+
+    // Draw auto mode banner indicator
+    if (isAutoMode) {
+        ctx.save();
+        const alpha = 0.5 + 0.3 * Math.sin(Date.now() / 250);
+        ctx.fillStyle = `rgba(255, 49, 79, ${alpha})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(255, 49, 79, 0.8)';
+        ctx.font = 'bold 11px Orbitron, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(isDemoMode ? "● SYSTEM DEMO ACTIVE (PRESS ANY KEY TO EXIT)" : "● AI ASSIST PROTOCOL ACTIVE", canvas.width - 20, 25);
+        ctx.restore();
+    }
 }
 
 let lastTime = 0;
@@ -1281,7 +1394,39 @@ function gameLoop(timestamp) {
 
 // 12. INPUTS
 function setupControls() {
+    // Global idle reset on any activity
+    window.addEventListener('keydown', () => resetIdleTimer());
+    window.addEventListener('mousedown', () => resetIdleTimer());
+    window.addEventListener('mousemove', () => resetIdleTimer());
+
     window.addEventListener('keydown', e => {
+        // Track typed keys buffer for "auto" toggle
+        keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-4);
+        if (keyBuffer === 'auto') {
+            if (gameState === 'PLAYING' || gameState === 'PAUSED') {
+                isAutoMode = !isAutoMode;
+                aiTargetBlock = null;
+                logMsg(`AUTO MODE: AI Assist ${isAutoMode ? 'ENABLED' : 'DISABLED'}.`, isAutoMode ? 'success' : 'system');
+                e.preventDefault();
+                return;
+            }
+        }
+        
+        // If in idle demo mode, any keypress exits back to start screen
+        if (isDemoMode) {
+            exitDemoMode();
+            e.preventDefault();
+            return;
+        }
+        
+        // If AI auto mode is active while playing, disable manual playing controls
+        if (isAutoMode && gameState === 'PLAYING') {
+            if (e.key === 'p' || e.key === 'P') {
+                togglePause();
+            }
+            return;
+        }
+
         if (gameState !== 'PLAYING' || !activeTRNA) return;
         
         const moveAmount = 25;
@@ -1299,7 +1444,7 @@ function setupControls() {
     });
 
     canvas.addEventListener('mousemove', e => {
-        if (gameState !== 'PLAYING' || !activeTRNA) return;
+        if (gameState !== 'PLAYING' || !activeTRNA || isAutoMode || isDemoMode) return;
         
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -1309,7 +1454,14 @@ function setupControls() {
     });
 
     canvas.addEventListener('mousedown', e => {
-        if (gameState !== 'PLAYING' || !activeTRNA) return;
+        // If in idle demo mode, clicking exits back to start screen
+        if (isDemoMode) {
+            exitDemoMode();
+            e.preventDefault();
+            return;
+        }
+        
+        if (gameState !== 'PLAYING' || !activeTRNA || isAutoMode) return;
         
         activeTRNA.speedY = fallSpeedDrop;
         activeTRNA.quickDropping = true;
