@@ -472,8 +472,9 @@ function spawnCodonBlock(xPosition) {
 }
 
 function updateMRNA(dt) {
+    const dtScale = dt / 16.667;
     mrnaChain.forEach(block => {
-        block.x -= mrnaSpeed;
+        block.x -= mrnaSpeed * dtScale;
         
         // Highlight corresponding row in Reference Table
         if (block.x < canvas.width / 2 && block.x + block.width > canvas.width / 2 && !block.translated) {
@@ -481,7 +482,7 @@ function updateMRNA(dt) {
         }
 
         if (block.successGlow > 0) {
-            block.successGlow -= 0.05;
+            block.successGlow -= 0.05 * dtScale;
             block.pulseScale = 1.0 + Math.sin(block.successGlow * Math.PI) * 0.15;
         }
     });
@@ -569,9 +570,13 @@ class TRNA {
     }
 
     update(dt) {
-        this.y += this.speedY;
-        this.glowPhase += 0.1;
-        this.x += (this.targetX - this.x) * 0.2;
+        const dtScale = dt / 16.667;
+        this.y += this.speedY * dtScale;
+        this.glowPhase += 0.1 * dtScale;
+        
+        // Framerate-independent LERP horizontal movement
+        const lerpFactor = 1 - Math.pow(1 - 0.2, dtScale);
+        this.x += (this.targetX - this.x) * lerpFactor;
         
         if (this.x < 10) this.x = 10;
         if (this.x > canvas.width - this.width - 10) this.x = canvas.width - this.width - 10;
@@ -732,11 +737,12 @@ class Particle {
         this.size = 2 + Math.random() * 4;
     }
 
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vy += 0.05;
-        this.alpha -= this.decay;
+    update(dt) {
+        const dtScale = dt / 16.667;
+        this.x += this.vx * dtScale;
+        this.y += this.vy * dtScale;
+        this.vy += 0.05 * dtScale;
+        this.alpha -= this.decay * dtScale;
     }
 
     draw() {
@@ -773,8 +779,9 @@ class AAProjectile {
         this.ctrlY = startY - 120;
     }
 
-    update() {
-        this.progress += this.speed;
+    update(dt) {
+        const dtScale = dt / 16.667;
+        this.progress += this.speed * dtScale;
         if (this.progress > 1) this.progress = 1;
         
         const t = this.progress;
@@ -783,7 +790,7 @@ class AAProjectile {
         this.x = mt * mt * this.x + 2 * mt * t * this.ctrlX + t * t * this.endX;
         this.y = mt * mt * this.y + 2 * mt * t * this.ctrlY + t * t * this.endY;
         
-        if (Math.random() < 0.3) {
+        if (Math.random() < 0.3 * dtScale) {
             particles.push(new Particle(this.x, this.y, this.color));
         }
     }
@@ -1138,12 +1145,12 @@ function drawmRNA() {
     ctx.restore();
 }
 
-function drawHUDGraphics() {
+function drawHUDGraphics(dt) {
     ctx.save();
     
     // Draw projectiles
     aminoAcidProjectiles.forEach((proj, idx) => {
-        proj.update();
+        proj.update(dt);
         proj.draw();
         
         if (proj.progress >= 1) {
@@ -1177,6 +1184,7 @@ function drawHUDGraphics() {
 // 11. GAME LOOPS
 function update(dt) {
     if (gameState === 'PLAYING') {
+        const dtScale = dt / 16.667;
         updateMRNA(dt);
         checkAndRefreshReferenceTable(); // Refresh table dynamically on remaining targets
         
@@ -1186,14 +1194,14 @@ function update(dt) {
         }
         
         particles.forEach((p, idx) => {
-            p.update();
+            p.update(dt);
             if (p.alpha <= 0) {
                 particles.splice(idx, 1);
             }
         });
         
         if (activeAnnouncement) {
-            activeAnnouncement.timer--;
+            activeAnnouncement.timer -= dtScale;
             if (activeAnnouncement.timer <= 0) {
                 activeAnnouncement = null;
             }
@@ -1201,7 +1209,7 @@ function update(dt) {
     }
 }
 
-function draw() {
+function draw(dt) {
     drawBackground();
     drawmRNA();
     
@@ -1210,7 +1218,7 @@ function draw() {
     }
     
     particles.forEach(p => p.draw());
-    drawHUDGraphics();
+    drawHUDGraphics(dt);
     
     // Draw announcement overlay if active
     if (activeAnnouncement) {
@@ -1258,11 +1266,15 @@ function draw() {
 
 let lastTime = 0;
 function gameLoop(timestamp) {
-    const dt = timestamp - lastTime;
+    if (!lastTime) lastTime = timestamp;
+    let dt = timestamp - lastTime;
     lastTime = timestamp;
     
+    // Cap dt to prevent massive physics jumps
+    if (dt > 100) dt = 100;
+    
     update(dt);
-    draw();
+    draw(dt);
     
     requestAnimationFrame(gameLoop);
 }
