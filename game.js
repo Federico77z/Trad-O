@@ -238,12 +238,99 @@ class SoundSynth {
     constructor() {
         this.ctx = null;
         this.muted = false;
+        this.bgmMuted = false;
+        this.bgmPlaying = false;
+        this.bgmIntervalId = null;
+        this.currentBeat = 0;
     }
 
     init() {
         if (!this.ctx) {
             this.ctx = new (window.AudioContext || window.webkitAudioContext)();
         }
+        if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume();
+        }
+    }
+
+    startBGM() {
+        this.init();
+        if (this.bgmIntervalId) return;
+        
+        this.bgmPlaying = true;
+        this.currentBeat = 0;
+        
+        // Minor key arpeggios: Am -> G -> F -> E
+        const A2 = 110.00, C3 = 130.81, E3 = 164.81, A3 = 220.00;
+        const G2 = 98.00, B2 = 123.47, D3 = 146.83, G3 = 196.00;
+        const F2 = 87.31, A2_ = 110.00, C3_ = 130.81, F3 = 174.61;
+        const E2 = 82.41, G2_ = 98.00, B2_ = 123.47, E3_ = 164.81;
+        
+        const BASS_LINE = [
+            A2, E3, A3, E3, A2, E3, A3, E3,
+            G2, D3, G3, D3, G2, D3, G3, D3,
+            F2, C3, F3, C3, F2, C3, F3, C3,
+            E2, B2, E3, B2, E2, B2, E3, B2
+        ];
+        
+        // Mix between Korobeiniki (Tetris) and repetitive hypnotic theme
+        const MELODY_LINE = [
+            659.25, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00, null,
+            523.25, 659.25, 587.33, 523.25, 493.88, null, 523.25, 587.33,
+            659.25, 523.25, 440.00, 440.00, null, 587.33, 698.46, 880.00,
+            783.99, 698.46, 659.25, null, 523.25, 659.25, 587.33, 523.25
+        ];
+        
+        this.bgmIntervalId = setInterval(() => {
+            if (gameState === 'PAUSED') return; // Silence BGM on system pause
+            if (this.muted || this.bgmMuted || !this.ctx) return;
+            
+            const now = this.ctx.currentTime;
+            
+            // 1. Triangle Melody Note
+            const melodyFreq = MELODY_LINE[this.currentBeat % MELODY_LINE.length];
+            if (melodyFreq !== null && melodyFreq !== undefined) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(melodyFreq, now);
+                
+                gain.gain.setValueAtTime(0.015, now); // Extremely gentle melody volume
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.18);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.18);
+            }
+            
+            // 2. Sine Wave Bass Note
+            const bassFreq = BASS_LINE[this.currentBeat % BASS_LINE.length];
+            if (bassFreq !== null && bassFreq !== undefined) {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(bassFreq, now);
+                
+                gain.gain.setValueAtTime(0.035, now); // Warm soft bass volume
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.19);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.19);
+            }
+            
+            this.currentBeat++;
+        }, 200);
+    }
+    
+    stopBGM() {
+        if (this.bgmIntervalId) {
+            clearInterval(this.bgmIntervalId);
+            this.bgmIntervalId = null;
+        }
+        this.bgmPlaying = false;
     }
 
     playSpawn() {
@@ -1595,6 +1682,7 @@ function setupControls() {
     // UI Buttons
     document.getElementById('start-btn').addEventListener('click', () => {
         sfx.init();
+        sfx.startBGM();
         startGame();
     });
 
@@ -1610,6 +1698,7 @@ function setupControls() {
         restartBtn.style.borderColor = "var(--magenta)";
         restartBtn.style.color = "var(--magenta)";
         
+        sfx.startBGM();
         startGame();
     });
 
@@ -1650,8 +1739,14 @@ function setupControls() {
     
     document.getElementById('audio-toggle').addEventListener('click', () => {
         sfx.muted = !sfx.muted;
-        document.getElementById('audio-toggle').textContent = sfx.muted ? '🔇 Unmute Audio' : '🔊 Mute Audio';
+        document.getElementById('audio-toggle').textContent = sfx.muted ? '🔇 Mute SFX' : '🔊 Mute SFX';
         logMsg(`AUDIO: Sound effects ${sfx.muted ? 'disabled' : 'enabled'}`);
+    });
+
+    document.getElementById('bgm-toggle').addEventListener('click', () => {
+        sfx.bgmMuted = !sfx.bgmMuted;
+        document.getElementById('bgm-toggle').textContent = sfx.bgmMuted ? '🔇 BGM: Off' : '🎵 BGM: On';
+        logMsg(`AUDIO: Background music ${sfx.bgmMuted ? 'disabled' : 'enabled'}`);
     });
 
     document.getElementById('next-level-btn').addEventListener('click', () => {
