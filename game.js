@@ -376,6 +376,8 @@ let translationProgress = 0; // Number of successfully translated residues
 let neededCounts = {};
 let translatedCounts = {};
 let sortedAAs = []; // Required amino acids sorted by frequency in target sequence
+let activeAnnouncement = null;
+let lastMilestoneReached = 0;
 
 // Entities
 let mrnaChain = [];
@@ -983,6 +985,27 @@ function triggerGameOver() {
     document.getElementById('gameover-overlay').classList.add('active');
 }
 
+function triggerMilestone(progress) {
+    const bonus = 1000 * level;
+    score += bonus;
+    document.getElementById('score-val').textContent = String(score).padStart(5, '0');
+    
+    sfx.playLevelUp(); // Celebrate with a rising note progression
+    logMsg(`MILESTONE: Translated ${progress}/${targetProtein.sequence.length} residues! (+${bonus} Pts Bonus)`, 'level');
+    
+    activeAnnouncement = {
+        text: `MILESTONE COMPLETED!`,
+        subtext: `${progress} / ${targetProtein.sequence.length} residues translated (+${bonus} pts)`,
+        timer: 100,
+        maxTimer: 100
+    };
+    
+    // Spawn three large explosion bursts in the center and sides of the screen
+    spawnExplosion(canvas.width / 2, canvas.height / 2, '#00f0ff', 40);
+    spawnExplosion(canvas.width / 2 - 120, canvas.height / 2, '#ffea00', 25);
+    spawnExplosion(canvas.width / 2 + 120, canvas.height / 2, '#2eff5f', 25);
+}
+
 function triggerLevelComplete() {
     gameState = 'LEVEL_COMPLETE';
     sfx.playLevelUp();
@@ -1125,6 +1148,20 @@ function drawHUDGraphics() {
         
         if (proj.progress >= 1) {
             fillHUDResidue(proj.aminoAcid, proj.color);
+            
+            // Check milestone (every 20 residues completed, but not completing the entire level yet)
+            const chainList = document.getElementById('chain-container');
+            if (chainList) {
+                const completedCount = chainList.querySelectorAll('.aa-node.aa-filled').length;
+                const milestoneSize = 20;
+                if (completedCount > 0 && completedCount % milestoneSize === 0 && completedCount < targetProtein.sequence.length) {
+                    if (completedCount > lastMilestoneReached) {
+                        lastMilestoneReached = completedCount;
+                        triggerMilestone(completedCount);
+                    }
+                }
+            }
+            
             aminoAcidProjectiles.splice(idx, 1);
             
             // Check level complete
@@ -1154,6 +1191,13 @@ function update(dt) {
                 particles.splice(idx, 1);
             }
         });
+        
+        if (activeAnnouncement) {
+            activeAnnouncement.timer--;
+            if (activeAnnouncement.timer <= 0) {
+                activeAnnouncement = null;
+            }
+        }
     }
 }
 
@@ -1167,6 +1211,49 @@ function draw() {
     
     particles.forEach(p => p.draw());
     drawHUDGraphics();
+    
+    // Draw announcement overlay if active
+    if (activeAnnouncement) {
+        ctx.save();
+        const t = activeAnnouncement.timer / activeAnnouncement.maxTimer; // 1 to 0
+        const alpha = Math.min(1, t * 3); // Fade out at the end
+        
+        ctx.globalAlpha = alpha;
+        
+        // Background dark band
+        ctx.fillStyle = 'rgba(2, 5, 15, 0.85)';
+        ctx.fillRect(0, canvas.height / 2 - 70, canvas.width, 140);
+        
+        // Glowing cyan lines
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2 - 70);
+        ctx.lineTo(canvas.width, canvas.height / 2 - 70);
+        ctx.moveTo(0, canvas.height / 2 + 70);
+        ctx.lineTo(canvas.width, canvas.height / 2 + 70);
+        ctx.stroke();
+        
+        // Text
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Text shadow
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#00f0ff';
+        
+        ctx.fillStyle = '#00f0ff';
+        ctx.font = 'bold 28px Orbitron, monospace';
+        ctx.fillText(activeAnnouncement.text, canvas.width / 2, canvas.height / 2 - 20);
+        
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ffea00';
+        ctx.fillStyle = '#ffea00';
+        ctx.font = 'bold 15px Orbitron, monospace';
+        ctx.fillText(activeAnnouncement.subtext, canvas.width / 2, canvas.height / 2 + 25);
+        
+        ctx.restore();
+    }
 }
 
 let lastTime = 0;
@@ -1277,6 +1364,8 @@ function startLevel() {
     translationProgress = 0;
     particles = [];
     aminoAcidProjectiles = [];
+    lastMilestoneReached = 0;
+    activeAnnouncement = null;
     
     targetProtein = PROTEINS_LIST[level - 1] || PROTEINS_LIST[0];
     
