@@ -836,22 +836,43 @@ function handleMatchSuccess(block, matchedTRNA) {
     const aa = matchedTRNA.aminoAcid;
     const color = matchedTRNA.color;
     
-    // Increment progress counts
-    translationProgress++;
-    translatedCounts[aa] = (translatedCounts[aa] || 0) + 1;
+    const isNeeded = (translatedCounts[aa] || 0) < neededCounts[aa];
     
-    logMsg(`MATCH: paired tRNA (${matchedTRNA.anticodon}) with Codon (${block.codon}). Added ${aa} to protein! (+${pointsAwarded} pts)`, 'success');
-    sfx.playMatch();
-    
-    // Spawn projectile flying up to top edge
-    aminoAcidProjectiles.push(new AAProjectile(
-        matchedTRNA.x + tRNAWidth/2,
-        matchedTRNA.y + 15,
-        matchedTRNA.x + tRNAWidth/2, // Fly straight up
-        0, // Top of canvas
-        aa,
-        color
-    ));
+    if (isNeeded) {
+        // Increment progress counts
+        translationProgress++;
+        translatedCounts[aa] = (translatedCounts[aa] || 0) + 1;
+        
+        logMsg(`MATCH: paired tRNA (${matchedTRNA.anticodon}) with Codon (${block.codon}). Added ${aa} to protein! (+${pointsAwarded} pts)`, 'success');
+        sfx.playMatch();
+        
+        // Spawn projectile flying up to top edge
+        const proj = new AAProjectile(
+            matchedTRNA.x + tRNAWidth/2,
+            matchedTRNA.y + 15,
+            matchedTRNA.x + tRNAWidth/2, // Fly straight up
+            0, // Top of canvas
+            aa,
+            color
+        );
+        proj.isExtra = false;
+        aminoAcidProjectiles.push(proj);
+    } else {
+        logMsg(`CLEANUP MATCH: paired tRNA (${matchedTRNA.anticodon}) with extra Codon (${block.codon}). (+${pointsAwarded} pts)`, 'success');
+        sfx.playMatch();
+        
+        // Spawn projectile that just fades out without triggering HUD fills
+        const proj = new AAProjectile(
+            matchedTRNA.x + tRNAWidth/2,
+            matchedTRNA.y + 15,
+            matchedTRNA.x + tRNAWidth/2, // Fly straight up
+            0, // Top of canvas
+            aa,
+            color
+        );
+        proj.isExtra = true;
+        aminoAcidProjectiles.push(proj);
+    }
     
     spawnExplosion(matchedTRNA.x + tRNAWidth/2, matchedTRNA.y + 15, color, 25);
     
@@ -1239,17 +1260,19 @@ function drawHUDGraphics(dt) {
         proj.draw();
         
         if (proj.progress >= 1) {
-            fillHUDResidue(proj.aminoAcid, proj.color);
-            
-            // Check milestone (every 20 residues completed, but not completing the entire level yet)
-            const chainList = document.getElementById('chain-container');
-            if (chainList) {
-                const completedCount = chainList.querySelectorAll('.aa-node.aa-filled').length;
-                const milestoneSize = 20;
-                if (completedCount > 0 && completedCount % milestoneSize === 0 && completedCount < targetProtein.sequence.length) {
-                    if (completedCount > lastMilestoneReached) {
-                        lastMilestoneReached = completedCount;
-                        triggerMilestone(completedCount);
+            if (!proj.isExtra) {
+                fillHUDResidue(proj.aminoAcid, proj.color);
+                
+                // Check milestone (every 20 residues completed, but not completing the entire level yet)
+                const chainList = document.getElementById('chain-container');
+                if (chainList) {
+                    const completedCount = chainList.querySelectorAll('.aa-node.aa-filled').length;
+                    const milestoneSize = 20;
+                    if (completedCount > 0 && completedCount % milestoneSize === 0 && completedCount < targetProtein.sequence.length) {
+                        if (completedCount > lastMilestoneReached) {
+                            lastMilestoneReached = completedCount;
+                            triggerMilestone(completedCount);
+                        }
                     }
                 }
             }
