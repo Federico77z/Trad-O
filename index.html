@@ -50,59 +50,55 @@
 
         <!-- Main Body -->
         <div class="main-layout">
-            <!-- Left Sidebar: Codon Reference Chart -->
+            <!-- Left Sidebar: Translation Queue Preview -->
             <aside class="hud-panel side-panel reference-panel">
-                <h2>Codon Reference</h2>
-                <p class="panel-desc">Match the falling tRNA's Anticodon with the complementary Codon on the scrolling mRNA at the bottom.</p>
-                <div class="table-container">
-                    <table class="reference-table">
-                        <thead>
-                            <tr>
-                                <th>tRNA (Anticodon)</th>
-                                <th>mRNA (Codon)</th>
-                                <th>Amino Acid</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr data-codon="AUG">
-                                <td><span class="base-u">U</span><span class="base-a">A</span><span class="base-c">C</span></td>
-                                <td><span class="base-a">A</span><span class="base-u">U</span><span class="base-g">G</span></td>
-                                <td><span class="aa-tag aa-met">Met</span></td>
-                            </tr>
-                            <tr data-codon="UUU">
-                                <td><span class="base-a">A</span><span class="base-a">A</span><span class="base-a">A</span></td>
-                                <td><span class="base-u">U</span><span class="base-u">U</span><span class="base-u">U</span></td>
-                                <td><span class="aa-tag aa-phe">Phe</span></td>
-                            </tr>
-                            <tr data-codon="GUC">
-                                <td><span class="base-c">C</span><span class="base-a">A</span><span class="base-g">G</span></td>
-                                <td><span class="base-g">G</span><span class="base-u">U</span><span class="base-c">C</span></td>
-                                <td><span class="aa-tag aa-val">Val</span></td>
-                            </tr>
-                            <tr data-codon="CCA">
-                                <td><span class="base-g">G</span><span class="base-g">G</span><span class="base-u">U</span></td>
-                                <td><span class="base-c">C</span><span class="base-c">C</span><span class="base-a">A</span></td>
-                                <td><span class="aa-tag aa-pro">Pro</span></td>
-                            </tr>
-                            <tr data-codon="AAA">
-                                <td><span class="base-u">U</span><span class="base-u">U</span><span class="base-u">U</span></td>
-                                <td><span class="base-a">A</span><span class="base-a">A</span><span class="base-a">A</span></td>
-                                <td><span class="aa-tag aa-lys">Lys</span></td>
-                            </tr>
-                            <tr data-codon="GAC">
-                                <td><span class="base-c">C</span><span class="base-u">U</span><span class="base-g">G</span></td>
-                                <td><span class="base-g">G</span><span class="base-a">A</span><span class="base-c">C</span></td>
-                                <td><span class="aa-tag aa-asp">Asp</span></td>
-                            </tr>
-                            <tr data-codon="UCG">
-                                <td><span class="base-a">A</span><span class="base-g">G</span><span class="base-c">C</span></td>
-                                <td><span class="base-u">U</span><span class="base-c">C</span><span class="base-g">G</span></td>
-                                <td><span class="aa-tag aa-ser">Ser</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <h2>Translation Queue</h2>
+                <p class="panel-desc">Preview of the current and next tRNA cargo complexes scheduled for ribosomal entry.</p>
+                
+                <div id="preview-container">
+                    <!-- Current Card -->
+                    <div id="current-card" class="preview-card">
+                        <div class="card-badge current-badge">CURRENT CARGO</div>
+                        <div class="card-content">
+                            <div class="aa-val">-</div>
+                            <div class="pairs-grid">
+                                <div>
+                                    <span class="label">Anticodon:</span>
+                                    <div class="anticodon-val">-</div>
+                                </div>
+                                <div>
+                                    <span class="label">Matches Codon:</span>
+                                    <div class="codon-val">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Queue Connector Line -->
+                    <div class="queue-connector">
+                        <div class="connector-line"></div>
+                    </div>
+                    
+                    <!-- Next Card -->
+                    <div id="next-card" class="preview-card">
+                        <div class="card-badge next-badge">NEXT CARGO</div>
+                        <div class="card-content">
+                            <div class="aa-val">-</div>
+                            <div class="pairs-grid">
+                                <div>
+                                    <span class="label">Anticodon:</span>
+                                    <div class="anticodon-val">-</div>
+                                </div>
+                                <div>
+                                    <span class="label">Matches Codon:</span>
+                                    <div class="codon-val">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="complementarity-hint">
+
+                <div class="complementarity-hint" style="margin-top: 15px;">
                     <span class="title">BONDING RULES:</span>
                     <span class="pair">A &harr; U</span>
                     <span class="pair">G &harr; C</span>

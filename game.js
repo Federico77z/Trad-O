@@ -386,6 +386,10 @@ let lastInputTime = Date.now();
 let keyBuffer = '';
 let aiTargetBlock = null;
 
+// Translation Queue Globals
+let currentTRNACodon = null;
+let nextTRNACodon = null;
+
 // Entities
 let mrnaChain = [];
 let activeTRNA = null;
@@ -483,11 +487,6 @@ function updateMRNA(dt) {
     mrnaChain.forEach(block => {
         block.x -= mrnaSpeed * dtScale;
         
-        // Highlight corresponding row in Reference Table
-        if (block.x < canvas.width / 2 && block.x + block.width > canvas.width / 2 && !block.translated) {
-            updateReferenceHighlight(block.codon);
-        }
-
         if (block.successGlow > 0) {
             block.successGlow -= 0.05 * dtScale;
             block.pulseScale = 1.0 + Math.sin(block.successGlow * Math.PI) * 0.15;
@@ -502,55 +501,58 @@ function updateMRNA(dt) {
     }
 }
 
-// Highlight Reference Table row
-let currentHighlightedCodon = null;
-function updateReferenceHighlight(codon) {
-    if (currentHighlightedCodon === codon) return;
+// Translation Queue Helpers
+function updatePreviewCards() {
+    const currentCard = document.getElementById('current-card');
+    const nextCard = document.getElementById('next-card');
+    const container = document.getElementById('preview-container');
     
-    document.querySelectorAll('.reference-table tbody tr').forEach(row => {
-        if (row.getAttribute('data-codon') === codon) {
-            row.classList.add('active-target');
-        } else {
-            row.classList.remove('active-target');
-        }
-    });
-    currentHighlightedCodon = codon;
+    if (!currentCard || !nextCard || !container) return;
+    
+    if (currentTRNACodon) {
+        const info = getCodonInfo(currentTRNACodon);
+        currentCard.querySelector('.aa-val').textContent = info.aminoAcid;
+        currentCard.querySelector('.anticodon-val').innerHTML = formatCodonHTML(info.anticodon);
+        currentCard.querySelector('.codon-val').innerHTML = formatCodonHTML(currentTRNACodon);
+        currentCard.style.setProperty('--current-color', info.color);
+        container.style.setProperty('--current-color', info.color);
+    } else {
+        currentCard.querySelector('.aa-val').textContent = '-';
+        currentCard.querySelector('.anticodon-val').textContent = '-';
+        currentCard.querySelector('.codon-val').textContent = '-';
+        currentCard.style.removeProperty('--current-color');
+    }
+    
+    if (nextTRNACodon) {
+        const info = getCodonInfo(nextTRNACodon);
+        nextCard.querySelector('.aa-val').textContent = info.aminoAcid;
+        nextCard.querySelector('.anticodon-val').innerHTML = formatCodonHTML(info.anticodon);
+        nextCard.querySelector('.codon-val').innerHTML = formatCodonHTML(nextTRNACodon);
+        nextCard.style.setProperty('--next-color', info.color);
+        container.style.setProperty('--next-color', info.color);
+        container.style.setProperty('--next-glow', `${info.color}66`);
+    } else {
+        nextCard.querySelector('.aa-val').textContent = '-';
+        nextCard.querySelector('.anticodon-val').textContent = '-';
+        nextCard.querySelector('.codon-val').textContent = '-';
+        nextCard.style.removeProperty('--next-color');
+        container.style.removeProperty('--next-glow');
+    }
 }
 
-// Dynamic Reference Table (shows only codons of remaining needed residues)
-let lastActiveCount = 0;
-function checkAndRefreshReferenceTable() {
-    const activeCodons = getActiveCodons();
-    if (activeCodons.length === lastActiveCount) return;
+function animateQueueTransition(newNextCodon) {
+    const previewContainer = document.getElementById('preview-container');
+    if (!previewContainer) return;
     
-    lastActiveCount = activeCodons.length;
+    previewContainer.classList.add('animating');
     
-    const tbody = document.querySelector('.reference-table tbody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    const uniqueCodons = Array.from(new Set(activeCodons));
-    
-    uniqueCodons.forEach(codon => {
-        const info = getCodonInfo(codon);
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-codon', codon);
+    setTimeout(() => {
+        currentTRNACodon = nextTRNACodon;
+        nextTRNACodon = newNextCodon;
         
-        const tdAnticodon = document.createElement('td');
-        tdAnticodon.innerHTML = formatCodonHTML(info.anticodon);
-        
-        const tdCodon = document.createElement('td');
-        tdCodon.innerHTML = formatCodonHTML(codon);
-        
-        const tdAA = document.createElement('td');
-        tdAA.innerHTML = formatAminoAcidHTML(info.aminoAcid);
-        
-        tr.appendChild(tdAnticodon);
-        tr.appendChild(tdCodon);
-        tr.appendChild(tdAA);
-        
-        tbody.appendChild(tr);
-    });
+        updatePreviewCards();
+        previewContainer.classList.remove('animating');
+    }, 400);
 }
 
 // 6. TRNA SHUTTLE
@@ -878,6 +880,10 @@ function handleMatchSuccess(block, matchedTRNA) {
     
     activeTRNA = null;
     
+    // Animate the Translation Queue shift
+    const newNextCodon = selectTargetCodon();
+    animateQueueTransition(newNextCodon);
+    
     // Spawn next tRNA if protein is not complete yet
     if (translationProgress < targetProtein.sequence.length) {
         setTimeout(spawnNewTRNA, 500);
@@ -901,6 +907,10 @@ function handleMatchFailure(block, matchedTRNA) {
     }
     
     activeTRNA = null;
+    
+    // Animate the Translation Queue shift
+    const newNextCodon = selectTargetCodon();
+    animateQueueTransition(newNextCodon);
     
     if (integrity <= 0) {
         triggerGameOver();
@@ -975,12 +985,22 @@ function spawnNewTRNA() {
     if (gameState !== 'PLAYING') return;
     
     if (translationProgress < targetProtein.sequence.length) {
-        const targetCodon = selectTargetCodon();
-        activeTRNA = new TRNA(targetCodon);
+        if (!currentTRNACodon) {
+            currentTRNACodon = selectTargetCodon();
+        }
+        if (!nextTRNACodon) {
+            nextTRNACodon = selectTargetCodon();
+        }
+        if (!currentTRNACodon) return;
+        
+        activeTRNA = new TRNA(currentTRNACodon);
         mouseX = activeTRNA.x + tRNAWidth / 2;
         
         // Highlight and scroll to target HUD node for the spawned tRNA
         highlightTargetHUDNode(activeTRNA.aminoAcid, activeTRNA.color);
+        
+        // Keep preview cards matched
+        updatePreviewCards();
     }
 }
 
@@ -1060,6 +1080,11 @@ function exitDemoMode() {
     aminoAcidProjectiles = [];
     activeTRNA = null;
     translationProgress = 0;
+    
+    // Clear preview queue codons
+    currentTRNACodon = null;
+    nextTRNACodon = null;
+    updatePreviewCards();
     
     // Reinitialize starting mRNA chain
     initMRNA();
@@ -1309,7 +1334,6 @@ function update(dt) {
         }
         const dtScale = dt / 16.667;
         updateMRNA(dt);
-        checkAndRefreshReferenceTable(); // Refresh table dynamically on remaining targets
         
         if (activeTRNA) {
             activeTRNA.update(dt);
@@ -1581,9 +1605,10 @@ function startLevel() {
     updateIntegrityBar();
     initializeProteinHUD();
     
-    // Reset reference table tracker and rebuild table
-    lastActiveCount = 0;
-    checkAndRefreshReferenceTable();
+    // Initialize preview queue codons
+    currentTRNACodon = selectTargetCodon();
+    nextTRNACodon = selectTargetCodon();
+    updatePreviewCards();
     
     initMRNA();
     
@@ -1633,7 +1658,10 @@ window.onload = () => {
     document.getElementById('target-protein-name').textContent = targetProtein.name;
     document.getElementById('target-protein-org').textContent = targetProtein.organism;
     
-    checkAndRefreshReferenceTable();
+    currentTRNACodon = selectTargetCodon();
+    nextTRNACodon = selectTargetCodon();
+    updatePreviewCards();
+    
     initMRNA();
     
     requestAnimationFrame(gameLoop);

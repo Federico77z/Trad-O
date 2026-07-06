@@ -310,31 +310,139 @@ body {
     margin-bottom: 12px;
 }
 
-.reference-table {
+/* Translation Queue Sidebar Styles */
+#preview-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
     width: 100%;
-    border-collapse: collapse;
-    font-size: 0.75rem;
+    height: 380px;
+    margin-top: 15px;
+    overflow: hidden;
 }
 
-.reference-table th {
+.preview-card {
+    position: relative;
+    width: 100%;
+    height: 145px;
+    background: rgba(10, 15, 30, 0.75);
+    border: 1.5px solid rgba(0, 240, 255, 0.15);
+    border-radius: 8px;
+    padding: 20px 15px 15px 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transform: translateY(0);
+}
+
+#current-card {
+    border-color: var(--current-color, rgba(0, 240, 255, 0.3));
+    box-shadow: 0 0 15px var(--current-color, rgba(0, 240, 255, 0.15));
+}
+
+#next-card {
+    border-color: var(--next-color, rgba(255, 234, 0, 0.3));
+    box-shadow: 0 0 10px var(--next-color, rgba(255, 234, 0, 0.1));
+}
+
+.preview-card .card-badge {
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    padding: 2px 8px;
+    font-size: 0.55rem;
+    font-weight: bold;
+    border-radius: 3px;
     font-family: var(--font-tech);
-    color: rgba(224, 229, 255, 0.4);
-    text-align: left;
-    padding: 6px 4px;
-    border-bottom: 1px solid rgba(224, 229, 255, 0.1);
+    letter-spacing: 1px;
+    z-index: 2;
+}
+
+.current-badge {
+    background: #02050f;
+    border: 1.5px solid var(--current-color, #00f0ff);
+    color: var(--current-color, #00f0ff);
+    text-shadow: 0 0 5px var(--current-color, #00f0ff);
+    box-shadow: 0 0 8px var(--current-color, rgba(0, 240, 255, 0.3));
+}
+
+.next-badge {
+    background: #02050f;
+    border: 1.5px solid var(--next-color, #a855f7);
+    color: var(--next-color, #a855f7);
+    text-shadow: 0 0 5px var(--next-color, #a855f7);
+    box-shadow: 0 0 8px var(--next-color, rgba(168, 85, 247, 0.3));
+}
+
+.preview-card .aa-val {
+    font-size: 1.6rem;
+    font-family: var(--font-tech);
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 8px;
+    text-shadow: 0 0 10px var(--card-color, #fff);
+}
+
+.preview-card .pairs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.preview-card .pairs-grid .label {
+    display: block;
     font-size: 0.6rem;
+    opacity: 0.4;
+    margin-bottom: 3px;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.reference-table td {
-    padding: 8px 4px;
-    border-bottom: 1px solid rgba(224, 229, 255, 0.05);
+.preview-card .pairs-grid .anticodon-val,
+.preview-card .pairs-grid .codon-val {
+    font-family: var(--font-tech);
+    font-size: 0.95rem;
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
-/* Highlight matching rows in chart */
-.reference-table tr.active-target {
-    background: rgba(0, 240, 255, 0.1);
-    border-left: 2px solid var(--cyan);
+/* Queue Connector Style */
+.queue-connector {
+    position: absolute;
+    top: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.connector-line {
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--current-color, #00f0ff) 0%, var(--next-color, #a855f7) 100%);
+    box-shadow: 0 0 8px var(--current-color, #00f0ff);
+}
+
+/* Slide Up Transition Engine */
+#preview-container.animating .preview-card {
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+#preview-container.animating #current-card {
+    transform: translateY(-185px) scale(0.85);
+    opacity: 0;
+    filter: blur(2px);
+}
+
+#preview-container.animating #next-card {
+    transform: translateY(-185px);
 }
 
 /* Nucleotide bases representation */
