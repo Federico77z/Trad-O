@@ -123,6 +123,14 @@
                             </ul>
                         </div>
                         <button id="start-btn" class="glow-button">Initialize Protocol</button>
+                        
+                        <!-- Scoreboard Panel -->
+                        <div class="scoreboard-container" style="margin-top: 20px; width: 280px; background: rgba(0, 0, 0, 0.4); border: 1.5px solid rgba(0, 240, 255, 0.15); border-radius: 6px; padding: 12px; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                            <h4 style="color: var(--yellow); text-shadow: var(--yellow-glow); margin: 0 0 8px 0; font-size: 0.85rem; font-family: var(--font-tech); text-transform: uppercase; letter-spacing: 1px; text-align: center;">Top Synthesizers</h4>
+                            <div id="scoreboard-list" style="font-size: 0.7rem; font-family: var(--font-tech); text-align: left; max-height: 110px; overflow-y: auto;">
+                                <!-- Populated dynamically in game.js -->
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -134,6 +142,22 @@
                             <p>Final Score: <span id="final-score" class="text-glow">0</span></p>
                             <p>Residues Completed: <span id="final-length" class="text-glow-cyan">0</span> aa</p>
                         </div>
+                        
+                        <!-- High Score Input Form -->
+                        <div id="highscore-input-container" style="display: none; margin: 15px 0;">
+                            <p style="color: var(--yellow); text-shadow: var(--yellow-glow); font-size: 0.85rem; font-weight: bold; font-family: var(--font-tech); text-align: center; margin: 0 0 5px 0;">NEW HIGH SCORE DETECTED!</p>
+                            <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 8px;">
+                                <input type="text" id="player-name-input" placeholder="ENTER NAME" maxlength="9" style="background: rgba(0,0,0,0.5); border: 1.5px solid var(--magenta); color: #fff; text-align: center; font-family: var(--font-tech); padding: 6px; font-size: 0.85rem; border-radius: 4px; width: 140px; outline: none; text-transform: uppercase;">
+                                <button id="submit-score-btn" class="glow-button" style="padding: 6px 12px; font-size: 0.75rem; border-color: var(--yellow); color: var(--yellow); text-shadow: var(--yellow-glow); margin: 0; min-width: auto; height: 32px;">Save</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Scoreboard Panel -->
+                        <div id="gameover-scoreboard-container" style="display: none; margin: 15px 0; width: 280px; background: rgba(0, 0, 0, 0.4); border: 1.5px solid rgba(0, 240, 255, 0.15); border-radius: 6px; padding: 10px; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+                            <h4 style="color: var(--yellow); text-shadow: var(--yellow-glow); margin: 0 0 8px 0; font-size: 0.8rem; font-family: var(--font-tech); text-transform: uppercase; letter-spacing: 1px; text-align: center;">Top Synthesizers</h4>
+                            <div id="gameover-scoreboard-list" style="font-size: 0.7rem; font-family: var(--font-tech); text-align: left; max-height: 100px; overflow-y: auto;"></div>
+                        </div>
+                        
                         <button id="restart-btn" class="glow-button alert-btn">Re-Initialize Protocol</button>
                     </div>
                 </div>

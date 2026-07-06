@@ -382,6 +382,7 @@ let lastMilestoneReached = 0;
 // Dev Mode & Demo Variables
 let isAutoMode = false;
 let isDemoMode = false;
+let autoModeUsed = false;
 let lastInputTime = Date.now();
 let keyBuffer = '';
 let aiTargetBlock = null;
@@ -1029,14 +1030,27 @@ function triggerGameOver() {
     sfx.playGameOver();
     logMsg(`TERMINATED: Integrity failed. Completed ${translationProgress}/${targetProtein.sequence.length} residues.`, 'error');
     
-    if (score > highScore) {
-        highScore = score;
-        localStorage.setItem('trado_highscore', highScore);
-        document.getElementById('highscore-val').textContent = String(highScore).padStart(5, '0');
-    }
-    
     document.getElementById('final-score').textContent = score;
     document.getElementById('final-length').textContent = `${translationProgress}/${targetProtein.sequence.length}`;
+    
+    // Scoreboard entry eligibility check
+    const scoreboard = JSON.parse(localStorage.getItem('trado_scoreboard') || '[]');
+    const isEligible = !autoModeUsed && !isDemoMode && score > 0;
+    
+    const inputContainer = document.getElementById('highscore-input-container');
+    const boardContainer = document.getElementById('gameover-scoreboard-container');
+    
+    document.getElementById('player-name-input').value = '';
+    
+    if (isEligible && (scoreboard.length < 10 || score > (scoreboard[scoreboard.length - 1]?.score || 0))) {
+        inputContainer.style.display = 'block';
+        boardContainer.style.display = 'none';
+    } else {
+        inputContainer.style.display = 'none';
+        boardContainer.style.display = 'block';
+    }
+    
+    populateScoreboardUI();
     document.getElementById('gameover-overlay').classList.add('active');
 }
 
@@ -1091,6 +1105,43 @@ function resetToStartScreen() {
     
     logMsg("SYSTEMS RESET: Returned to main protocol menu.", "system");
     resetIdleTimer();
+}
+
+function populateScoreboardUI() {
+    const scoreboard = JSON.parse(localStorage.getItem('trado_scoreboard') || '[]');
+    scoreboard.sort((a, b) => b.score - a.score);
+    
+    const formatScore = (s) => String(s).padStart(5, '0');
+    
+    const buildListHTML = (listEl) => {
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        if (scoreboard.length === 0) {
+            listEl.innerHTML = '<div style="text-align: center; opacity: 0.4; padding: 10px; font-family: monospace; font-size: 0.65rem;">NO RECORDS DETECTED</div>';
+            return;
+        }
+        scoreboard.forEach((entry, index) => {
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.justifyContent = 'space-between';
+            row.style.padding = '3px 0';
+            row.style.borderBottom = '1px dashed rgba(255,255,255,0.05)';
+            
+            const color = index === 0 ? 'var(--yellow)' : index === 1 ? '#00f0ff' : index === 2 ? 'var(--magenta)' : '#fff';
+            row.style.color = color;
+            
+            row.innerHTML = `
+                <span style="width: 25px; opacity: 0.6;">#${index + 1}</span>
+                <span style="flex-grow: 1; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">${entry.name}</span>
+                <span style="width: 45px; text-align: center; opacity: 0.6;">LV ${entry.level}</span>
+                <span style="width: 60px; text-align: right; font-weight: bold;">${formatScore(entry.score)}</span>
+            `;
+            listEl.appendChild(row);
+        });
+    };
+    
+    buildListHTML(document.getElementById('scoreboard-list'));
+    buildListHTML(document.getElementById('gameover-scoreboard-list'));
 }
 
 function runAI(dt) {
@@ -1176,6 +1227,24 @@ function triggerGameVictory() {
     restartBtn.style.borderColor = "var(--green)";
     restartBtn.style.color = "var(--green)";
     
+    // Scoreboard entry eligibility check
+    const scoreboard = JSON.parse(localStorage.getItem('trado_scoreboard') || '[]');
+    const isEligible = !autoModeUsed && !isDemoMode && score > 0;
+    
+    const inputContainer = document.getElementById('highscore-input-container');
+    const boardContainer = document.getElementById('gameover-scoreboard-container');
+    
+    document.getElementById('player-name-input').value = '';
+    
+    if (isEligible && (scoreboard.length < 10 || score > (scoreboard[scoreboard.length - 1]?.score || 0))) {
+        inputContainer.style.display = 'block';
+        boardContainer.style.display = 'none';
+    } else {
+        inputContainer.style.display = 'none';
+        boardContainer.style.display = 'block';
+    }
+    
+    populateScoreboardUI();
     document.getElementById('gameover-overlay').classList.add('active');
 }
 
@@ -1321,6 +1390,7 @@ function update(dt) {
         if (Date.now() - lastInputTime > 30000) {
             isAutoMode = true;
             isDemoMode = true;
+            autoModeUsed = true;
             logMsg("AUTO MODE: Idle timeout. Initializing translation protocol demonstration.", "system");
             
             document.getElementById('start-overlay').classList.remove('active');
@@ -1331,6 +1401,7 @@ function update(dt) {
     if (gameState === 'PLAYING') {
         if (isAutoMode) {
             runAI(dt);
+            autoModeUsed = true;
         }
         const dtScale = dt / 16.667;
         updateMRNA(dt);
@@ -1544,6 +1615,39 @@ function setupControls() {
 
     document.getElementById('pause-btn').addEventListener('click', togglePause);
     
+    // High Score Submission Event
+    document.getElementById('submit-score-btn').addEventListener('click', () => {
+        const nameInput = document.getElementById('player-name-input');
+        let name = nameInput.value.trim().toUpperCase() || 'UNKNOWN';
+        name = name.slice(0, 9);
+        
+        const scoreboard = JSON.parse(localStorage.getItem('trado_scoreboard') || '[]');
+        scoreboard.push({
+            name: name,
+            score: score,
+            level: level,
+            date: new Date().toLocaleDateString()
+        });
+        
+        scoreboard.sort((a, b) => b.score - a.score);
+        scoreboard.splice(10);
+        localStorage.setItem('trado_scoreboard', JSON.stringify(scoreboard));
+        
+        // Update high score display in HUD if this set a new record
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('trado_highscore', highScore);
+            document.getElementById('highscore-val').textContent = String(highScore).padStart(5, '0');
+        }
+        
+        // Refresh ranking
+        populateScoreboardUI();
+        
+        // Switch overlays
+        document.getElementById('highscore-input-container').style.display = 'none';
+        document.getElementById('gameover-scoreboard-container').style.display = 'block';
+    });
+    
     document.getElementById('audio-toggle').addEventListener('click', () => {
         sfx.muted = !sfx.muted;
         document.getElementById('audio-toggle').textContent = sfx.muted ? '🔇 Unmute Audio' : '🔊 Mute Audio';
@@ -1564,6 +1668,7 @@ function setupControls() {
 function startGame() {
     score = 0;
     level = 1;
+    autoModeUsed = false;
     highScore = parseInt(localStorage.getItem('trado_highscore') || '0', 10);
     
     // Clear telemetry log box
@@ -1672,6 +1777,7 @@ window.onload = () => {
     currentTRNACodon = selectTargetCodon();
     nextTRNACodon = selectTargetCodon();
     updatePreviewCards();
+    populateScoreboardUI();
     
     initMRNA();
     
