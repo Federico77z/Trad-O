@@ -448,7 +448,7 @@ const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 
 let score = 0;
-let highScore = parseInt(localStorage.getItem('trado_highscore') || '0', 10);
+let highScore = 0;
 let level = 1;
 let integrity = 100;
 let gameState = 'START';
@@ -1231,6 +1231,20 @@ function populateScoreboardUI() {
     buildListHTML(document.getElementById('gameover-scoreboard-list'));
 }
 
+function syncHighScoreDisplay() {
+    const scoreboard = JSON.parse(localStorage.getItem('trado_scoreboard') || '[]');
+    if (scoreboard.length > 0) {
+        scoreboard.sort((a, b) => b.score - a.score);
+        highScore = scoreboard[0].score;
+    } else {
+        highScore = 0;
+    }
+    const valElement = document.getElementById('highscore-val');
+    if (valElement) {
+        valElement.textContent = String(highScore).padStart(5, '0');
+    }
+}
+
 function runAI(dt) {
     if (!activeTRNA) {
         aiTargetBlock = null;
@@ -1722,15 +1736,9 @@ function setupControls() {
         scoreboard.splice(10);
         localStorage.setItem('trado_scoreboard', JSON.stringify(scoreboard));
         
-        // Update high score display in HUD if this set a new record
-        if (score > highScore) {
-            highScore = score;
-            localStorage.setItem('trado_highscore', highScore);
-            document.getElementById('highscore-val').textContent = String(highScore).padStart(5, '0');
-        }
-        
-        // Refresh ranking
+        // Refresh ranking and HUD display
         populateScoreboardUI();
+        syncHighScoreDisplay();
         
         // Switch overlays
         document.getElementById('highscore-input-container').style.display = 'none';
@@ -1764,14 +1772,13 @@ function startGame() {
     score = 0;
     level = 1;
     autoModeUsed = false;
-    highScore = parseInt(localStorage.getItem('trado_highscore') || '0', 10);
+    syncHighScoreDisplay();
     
     // Clear telemetry log box
     const logBox = document.getElementById('telemetry-log');
     if (logBox) logBox.innerHTML = '';
     
     document.getElementById('score-val').textContent = "00000";
-    document.getElementById('highscore-val').textContent = String(highScore).padStart(5, '0');
     
     document.getElementById('start-overlay').classList.remove('active');
     document.getElementById('gameover-overlay').classList.remove('active');
@@ -1873,6 +1880,7 @@ window.onload = () => {
     nextTRNACodon = selectTargetCodon();
     updatePreviewCards();
     populateScoreboardUI();
+    syncHighScoreDisplay();
     
     initMRNA();
     
