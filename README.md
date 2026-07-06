@@ -73,8 +73,16 @@ Competitive local scoreboard stored in the browser's `localStorage`:
 
 ---
 
-## How to Play & Run Locally
+## How to Play
 
+### 1. Direct Play (Recommended / Easiest)
+You do not need to install anything or run a local server. Simply:
+1. Download or clone this repository.
+2. Double-click the **[index.html](index.html)** file to open it directly in any modern web browser (Chrome, Firefox, Safari, Edge).
+3. Click **Initialize Protocol** and start playing!
+
+### 2. Run Locally via HTTP Server (Optional)
+If you prefer to run the game through a local HTTP server:
 1. Open a terminal and navigate to the project directory:
    ```bash
    cd path/to/trad-o
@@ -83,5 +91,5 @@ Competitive local scoreboard stored in the browser's `localStorage`:
    ```bash
    python3 -m http.server 8000
    ```
-3. Open [http://localhost:8000](http://localhost:8000) in Chrome, Firefox, or Safari.
-4. Press **Initialize Protocol** to begin!
+3. Open [http://localhost:8000](http://localhost:8000) in your web browser.
+4. Click **Initialize Protocol** to begin!
