@@ -1065,7 +1065,7 @@ function resetIdleTimer() {
     lastInputTime = Date.now();
 }
 
-function exitDemoMode() {
+function resetToStartScreen() {
     isAutoMode = false;
     isDemoMode = false;
     gameState = 'START';
@@ -1089,7 +1089,7 @@ function exitDemoMode() {
     // Reinitialize starting mRNA chain
     initMRNA();
     
-    logMsg("AUTO MODE: Demonstration terminated. Returning to start menu.", "system");
+    logMsg("SYSTEMS RESET: Returned to main protocol menu.", "system");
     resetIdleTimer();
 }
 
@@ -1447,6 +1447,13 @@ function setupControls() {
     window.addEventListener('mousemove', () => resetIdleTimer());
 
     window.addEventListener('keydown', e => {
+        // If Escape is pressed, reset to start screen immediately (works in any state!)
+        if (e.key === 'Escape') {
+            resetToStartScreen();
+            e.preventDefault();
+            return;
+        }
+
         // Track typed keys buffer for "auto" toggle
         keyBuffer = (keyBuffer + e.key.toLowerCase()).slice(-4);
         if (keyBuffer === 'auto') {
@@ -1461,7 +1468,7 @@ function setupControls() {
         
         // If in idle demo mode, any keypress exits back to start screen
         if (isDemoMode) {
-            exitDemoMode();
+            resetToStartScreen();
             e.preventDefault();
             return;
         }
@@ -1503,7 +1510,7 @@ function setupControls() {
     canvas.addEventListener('mousedown', e => {
         // If in idle demo mode, clicking exits back to start screen
         if (isDemoMode) {
-            exitDemoMode();
+            resetToStartScreen();
             e.preventDefault();
             return;
         }
