@@ -208,10 +208,19 @@ function getComplementaryBase(base) {
 }
 
 function getComplementaryCodon(codon) {
+    if (!codon || typeof codon !== 'string') return '???';
     return codon.split('').map(getComplementaryBase).join('');
 }
 
 function getCodonInfo(codon) {
+    if (!codon || typeof codon !== 'string') {
+        return {
+            aminoAcid: '???',
+            anticodon: '???',
+            color: '#ffffff',
+            aaClass: 'aa-generic'
+        };
+    }
     const aminoAcid = aminoAcidMap[codon] || '???';
     const anticodon = getComplementaryCodon(codon);
     const details = AA_DETAILS[aminoAcid] || { color: '#ffffff', aaClass: 'aa-generic' };
@@ -224,6 +233,7 @@ function getCodonInfo(codon) {
 }
 
 function formatCodonHTML(codon) {
+    if (!codon || typeof codon !== 'string') return '-';
     return codon.split('').map(base => `<span class="base-${base.toLowerCase()}">${base}</span>`).join('');
 }
 
@@ -543,6 +553,11 @@ function getActiveCodons() {
                 active.push(...(AA_TO_CODONS[aa] || []));
             }
         });
+    }
+
+    // Ultimate fallback: if all needed amino acids are completed, return all codons
+    if (active.length === 0) {
+        active.push(...Object.keys(aminoAcidMap));
     }
     return active;
 }
@@ -968,12 +983,10 @@ function handleMatchSuccess(block, matchedTRNA) {
     
     activeTRNA = null;
     
-    // Animate the Translation Queue shift
-    const newNextCodon = selectTargetCodon();
-    animateQueueTransition(newNextCodon);
-    
-    // Spawn next tRNA if protein is not complete yet
+    // Animate the Translation Queue shift and spawn next tRNA if protein is not complete yet
     if (translationProgress < targetProtein.sequence.length) {
+        const newNextCodon = selectTargetCodon();
+        animateQueueTransition(newNextCodon);
         setTimeout(spawnNewTRNA, 500);
     }
 }
@@ -996,13 +1009,11 @@ function handleMatchFailure(block, matchedTRNA) {
     
     activeTRNA = null;
     
-    // Animate the Translation Queue shift
-    const newNextCodon = selectTargetCodon();
-    animateQueueTransition(newNextCodon);
-    
     if (integrity <= 0) {
         triggerGameOver();
-    } else {
+    } else if (translationProgress < targetProtein.sequence.length) {
+        const newNextCodon = selectTargetCodon();
+        animateQueueTransition(newNextCodon);
         setTimeout(spawnNewTRNA, 550);
     }
 }
@@ -1035,33 +1046,20 @@ function checkCollision() {
     }
 }
 
+const MIN_SAFE_TARGET_X = 288; // 3 seconds * 96 px/sec at 60 FPS (mrnaSpeed = 1.6 px/frame)
+
 function selectTargetCodon() {
-    const dist = mRNAY - (-tRNAHeight); // 585px
-    const t_normal = dist / fallSpeedNormal;
-    const t_quick = dist / fallSpeedDrop;
+    // Prioritize untranslated blocks that are far enough to the right (x >= 288px, >= 3s remaining)
+    const safeBlocks = mrnaChain.filter(block => !block.translated && block.x >= MIN_SAFE_TARGET_X);
 
-    // Filter untranslated mRNA blocks that are reachable
-    const reachableBlocks = mrnaChain.filter(block => {
-        if (block.translated) return false;
-        const maxBlockX = canvas.width + t_quick * mrnaSpeed;
-        const minBlockX = t_normal * mrnaSpeed - block.width;
-        return block.x >= minBlockX && block.x <= maxBlockX;
-    });
-
-    if (reachableBlocks.length > 0) {
-        const block = reachableBlocks[Math.floor(Math.random() * reachableBlocks.length)];
+    if (safeBlocks.length > 0) {
+        const block = safeBlocks[Math.floor(Math.random() * safeBlocks.length)];
         return block.codon;
-    }
-
-    const minBlockX = t_normal * mrnaSpeed - codonWidth;
-    const upcoming = mrnaChain.filter(block => !block.translated && block.x >= minBlockX);
-    if (upcoming.length > 0) {
-        return upcoming[0].codon;
     }
 
     const anyUntranslated = mrnaChain.filter(block => !block.translated);
     if (anyUntranslated.length > 0) {
-        return anyUntranslated[0].codon;
+        return anyUntranslated[Math.floor(Math.random() * anyUntranslated.length)].codon;
     }
 
     // Fallback to active pool
@@ -1080,6 +1078,34 @@ function spawnNewTRNA() {
             nextTRNACodon = selectTargetCodon();
         }
         if (!currentTRNACodon) return;
+        
+        // Guarantee that when tRNA appears on screen, a matching untranslated codon exists at x >= 288 (>= 3s window)
+        const hasSafeMatchingBlock = mrnaChain.some(block => !block.translated && block.codon === currentTRNACodon && block.x >= MIN_SAFE_TARGET_X);
+        
+        if (!hasSafeMatchingBlock) {
+            // Find untranslated blocks positioned at x >= MIN_SAFE_TARGET_X
+            const safeBlocks = mrnaChain.filter(block => !block.translated && block.x >= MIN_SAFE_TARGET_X);
+            if (safeBlocks.length > 0) {
+                // Assign currentTRNACodon to one of the safe untranslated blocks
+                const targetBlock = safeBlocks[Math.floor(Math.random() * safeBlocks.length)];
+                targetBlock.codon = currentTRNACodon;
+            } else {
+                // If no safe untranslated block exists at x >= 288, find the rightmost untranslated block
+                const untranslated = mrnaChain.filter(block => !block.translated);
+                if (untranslated.length > 0) {
+                    const rightmost = untranslated.reduce((prev, curr) => (curr.x > prev.x ? curr : prev));
+                    rightmost.codon = currentTRNACodon;
+                    if (rightmost.x < MIN_SAFE_TARGET_X) {
+                        rightmost.x = MIN_SAFE_TARGET_X;
+                    }
+                } else if (mrnaChain.length > 0) {
+                    const rightmost = mrnaChain.reduce((prev, curr) => (curr.x > prev.x ? curr : prev));
+                    rightmost.translated = false;
+                    rightmost.codon = currentTRNACodon;
+                    rightmost.x = Math.max(rightmost.x, MIN_SAFE_TARGET_X);
+                }
+            }
+        }
         
         activeTRNA = new TRNA(currentTRNACodon);
         mouseX = activeTRNA.x + tRNAWidth / 2;
@@ -1594,6 +1620,21 @@ function draw(dt) {
         ctx.fillText(isDemoMode ? "● SYSTEM DEMO ACTIVE (PRESS ANY KEY TO EXIT)" : "● AI ASSIST PROTOCOL ACTIVE", canvas.width - 20, 25);
         ctx.restore();
     }
+
+    // Draw paused overlay
+    if (gameState === 'PAUSED') {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#00f0ff';
+        ctx.font = 'bold 32px Orbitron, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2);
+        ctx.restore();
+    }
 }
 
 let lastTime = 0;
@@ -1645,13 +1686,17 @@ function setupControls() {
             return;
         }
         
-        // If AI auto mode is active while playing, disable manual playing controls
-        if (isAutoMode && gameState === 'PLAYING') {
-            if (e.key === 'p' || e.key === 'P') {
+        // Toggle pause/unpause
+        if (e.key === 'p' || e.key === 'P') {
+            if (gameState === 'PLAYING' || gameState === 'PAUSED') {
                 togglePause();
+                e.preventDefault();
+                return;
             }
-            return;
         }
+
+        // If AI auto mode is active, disable manual movement controls
+        if (isAutoMode && gameState === 'PLAYING') return;
 
         if (gameState !== 'PLAYING' || !activeTRNA) return;
         
@@ -1664,8 +1709,6 @@ function setupControls() {
             activeTRNA.speedY = fallSpeedDrop;
             activeTRNA.quickDropping = true;
             e.preventDefault();
-        } else if (e.key === 'p' || e.key === 'P') {
-            togglePause();
         }
     });
 
