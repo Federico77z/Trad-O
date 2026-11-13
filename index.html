@@ -97,10 +97,24 @@
                     </div>
                 </div>
 
-                <div class="complementarity-hint" style="margin-top: 15px;">
+                <div class="complementarity-hint" style="margin-top: 12px;">
                     <span class="title">BONDING RULES:</span>
-                    <span class="pair">A &harr; U</span>
-                    <span class="pair">G &harr; C</span>
+                    <span class="pair">A &harr; U &nbsp;|&nbsp; G &harr; C</span>
+                </div>
+
+                <div class="special-codons-hint" style="margin-top: 8px;">
+                    <span class="title">SPECIAL CODONS:</span>
+                    <div class="special-row"><span class="badge-gold">★ GOLD</span> <span>3x Residue Burst</span></div>
+                    <div class="special-row"><span class="badge-freeze">❄ CRYO</span> <span>Slow-Mo Rail (6s)</span></div>
+                    <div class="special-row"><span class="badge-repair">✚ NANO</span> <span>+35% Integrity</span></div>
+                    <div class="special-row"><span class="badge-hazard">☣ MUTANT</span> <span>Hazard! Avoid</span></div>
+                </div>
+
+                <div class="special-codons-hint" style="margin-top: 8px;">
+                    <span class="title">VIRAL THREATS (FEVER = IMMUNE):</span>
+                    <div class="special-row"><span class="badge-vgreen">🦠 GREEN</span> <span>0 Pts on Match</span></div>
+                    <div class="special-row"><span class="badge-vyellow">🦠 YELLOW</span> <span>Fast mRNA (6s)</span></div>
+                    <div class="special-row"><span class="badge-vred">🦠 RED</span> <span>2x Damage (20s)</span></div>
                 </div>
             </aside>
 
@@ -116,10 +130,10 @@
                         <div class="instructions-card">
                             <h3>Mission Parameters:</h3>
                             <ul>
-                                <li>Control the falling <strong>tRNA</strong> at the top.</li>
-                                <li>Aim at the complementary moving <strong>mRNA codon</strong> below.</li>
-                                <li>Align them correctly to add the amino acid cargo to the protein chain.</li>
-                                <li>Mismatches or missed codons drain ribosomal energy (shield/health).</li>
+                                <li>Align the falling <strong>tRNA</strong> with a complementary <strong>mRNA codon</strong> below.</li>
+                                <li>Hold <strong>&uarr; Up Arrow</strong> to slow the tRNA fall (<strong>3.0s gauge</strong>; each <strong>PERFECT</strong> match restores <strong>+0.5s</strong>!).</li>
+                                <li>Hit the <strong>Bullseye Center</strong> for <strong>PERFECT (3x pts + 2x AA)</strong> &amp; charge <strong>Fever Overdrive</strong>!</li>
+                                <li>Dodge drifting <strong>🦠 Viruses</strong> (Green = 0 pts, Yellow = Fast mRNA, Red = 2x Dmg). <strong>Fever grants full Virus Immunity!</strong></li>
                             </ul>
                         </div>
                         <button id="start-btn" class="glow-button">Initialize Protocol</button>
@@ -189,12 +203,40 @@
                     <span id="integrity-text" class="status-ok">SYSTEMS NOMINAL</span>
                 </div>
 
+                <!-- Combo Fever / Overdrive meter -->
+                <div class="fever-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="label" style="margin-bottom: 4px;">FEVER OVERDRIVE:</span>
+                        <span id="streak-badge" class="streak-badge">0x STREAK</span>
+                    </div>
+                    <div class="progress-bar-container fever-bar-container">
+                        <div id="fever-bar" class="progress-bar fever-bar" style="width: 0%;"></div>
+                    </div>
+                    <span id="fever-text" class="fever-status">AIM BULLSEYE FOR FEVER!</span>
+                </div>
+
+                <!-- Hover Brake (Up Arrow Slow Fall) 3s meter -->
+                <div class="brake-box">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="label" style="margin-bottom: 4px;">HOVER BRAKE (&uarr;):</span>
+                        <span id="brake-badge" class="brake-badge">3.0s / 3.0s</span>
+                    </div>
+                    <div class="progress-bar-container brake-bar-container">
+                        <div id="brake-bar" class="progress-bar brake-bar" style="width: 100%;"></div>
+                    </div>
+                    <span id="brake-text" class="fever-status">HOLD &uarr; TO SLOW (+0.5s ON PERFECT)</span>
+                </div>
+
                 <div class="controls-box">
                     <h3>Manual Controls</h3>
                     <div class="control-grid">
                         <div class="control-row">
                             <span class="key">&larr;</span> / <span class="key">&rarr;</span>
                             <span class="action">Move Left / Right</span>
+                        </div>
+                        <div class="control-row">
+                            <span class="key">&uarr;</span> <span style="opacity:0.6; font-size:0.6rem;">(Hold)</span>
+                            <span class="action">Slow Fall (3s Gauge)</span>
                         </div>
                         <div class="control-row">
                             <span class="key">&darr;</span> / <span class="key">Space</span>

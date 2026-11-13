@@ -30,7 +30,32 @@ Replaces static reference tables with a dynamic, Tetris-like preview queue:
 * **NEXT CARGO**: Shows details for the next scheduled tRNA.
 * **Slide-Up Animation**: Consuming the current tRNA triggers a smooth sliding transition, shifting the next cargo up into the active slot while slide-fading a new one in at the bottom.
 
-### 2. Level Milestones (Every 20 Residues)
+### 2. Bullseye Precision & Combo Fever Overdrive
+* **Laser Aiming Reticle**: A dynamic vertical targeting beam under the falling tRNA locks on (`🎯 BULLSEYE`) when aligned with the center of a matching mRNA block.
+* **Precision Grading**:
+  * **🎯 PERFECT (Bullseye)**: **3x Score**, **+28% Fever**, and **synthesizes 2 residues at once**!
+  * **GREAT**: **1.5x Score** and **+16% Fever**.
+  * **GOOD**: **1x Score** and **+10% Fever**.
+* **⚡ Ribosome Overdrive (8s)**: Filling the Fever gauge to 100% triggers Overdrive mode—doubling all points, synthesizing **3 residues per match**, highlighting matching codons on the rail, shifting the BGM up a fifth, and allowing you to **purify `☣ MUTANT` blocks** on contact for +2000 bonus points!
+
+### 3. Special mRNA Power-Up & Hazard Codons
+* **★ GOLD (Golden Catalyst)**: Synthesizes **+2 extra residues** (3–5 residues total in a multi-projectile burst) + `1500 * level` bonus points.
+* **❄ CRYO (Cryo-Stasis)**: Slows down mRNA scrolling and tRNA fall speed for **6 seconds** + `600 * level` bonus points.
+* **✚ NANO (Nano-Repair)**: Restores **+35% Ribosome Integrity** + `500 * level` bonus points.
+* **☣ MUTANT (Mutagenic Hazard)**: Corrupted codon trap that drains **-25% Integrity** and resets combo if hit (unless purified during **Overdrive**!).
+
+### 4. Drifting Virus Obstacles & Fever Immunity
+Spiked viral capsids drift across the mid-screen zone (`y = 160..365`, keeping safe clearance from both the top tRNA spawn and the scrolling mRNA rail below):
+* **🦠 Green Virus (Common)**: Infects the falling tRNA (`🦠 0 PTS`), awarding **0 points** when that tRNA docks.
+* **🦠 Yellow Virus (Uncommon)**: Triggers a **Viral Surge** that accelerates the mRNA chain (`1.85x` speed) for **6 seconds**.
+* **🦠 Red Virus (Rare)**: Induces **Double Damage Vulnerability** (`2x` integrity loss on mismatches, misses, or mutant hits) for **20 seconds**.
+* **⚡ Fever Immunity**: Activating **Ribosome Overdrive** immediately cleanses all active viral debuffs and makes the falling tRNA **completely immune** to viruses (colliding with any virus during Overdrive vaporizes it harmlessly!).
+
+### 5. Hover Brake (Up Arrow Slow-Fall Gauge)
+* Hold **`Up Arrow` (or `W`)** while a tRNA is falling to fire retro-thrusters and slow its descent to **22% speed**—ideal for letting a drifting virus pass underneath or lining up a Bullseye shot.
+* **Limited 3.0s Gauge**: Depletes while held down and replenishes by **+0.5s** on every **🎯 PERFECT (Bullseye)** match.
+
+### 6. Level Milestones (Every 20 Residues)
 To break up the long length of 100+ aa sequences:
 * Reaching a multiple of 20 translated residues awards a score bonus of `1000 * level`.
 * Triggers a widescreen text overlay banner ("MILESTONE COMPLETED!") and three large colorful particle explosions on canvas.
@@ -56,6 +81,7 @@ Competitive local scoreboard stored in the browser's `localStorage`:
 ## Controls
 
 * **Move Left / Right**: `Left Arrow` / `Right Arrow` (or WASD / slide mouse).
+* **Hover Brake (Slow Fall)**: Hold `Up Arrow` / `W` (3.0s gauge; `+0.5s` per `PERFECT` match).
 * **Drop tRNA**: `Down Arrow` / `Spacebar` (or left-click canvas).
 * **Pause / Resume**: Press the `P` key (or click the **Pause System** button).
 * **Exit / Reset**: Press `Escape` (ESC) to reset the game state and return to the main menu overlay.

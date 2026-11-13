@@ -316,22 +316,22 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 40px;
+    gap: 24px;
     width: 100%;
-    height: 395px;
-    margin-top: 15px;
-    padding-top: 15px; /* Prevent card badge top overlap from clipping at the container border */
+    height: 292px;
+    margin-top: 6px;
+    padding-top: 12px; /* Prevent card badge top overlap from clipping at the container border */
     overflow: hidden;
 }
 
 .preview-card {
     position: relative;
     width: 100%;
-    height: 145px;
+    height: 124px;
     background: rgba(10, 15, 30, 0.75);
     border: 1.5px solid rgba(0, 240, 255, 0.15);
     border-radius: 8px;
-    padding: 20px 15px 15px 15px;
+    padding: 16px 14px 12px 14px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -414,10 +414,10 @@ body {
 /* Queue Connector Style */
 .queue-connector {
     position: absolute;
-    top: 150px;
+    top: 130px;
     left: 50%;
     transform: translateX(-50%);
-    height: 40px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -437,13 +437,13 @@ body {
 }
 
 #preview-container.animating #current-card {
-    transform: translateY(-185px) scale(0.85);
+    transform: translateY(-148px) scale(0.85);
     opacity: 0;
     filter: blur(2px);
 }
 
 #preview-container.animating #next-card {
-    transform: translateY(-185px);
+    transform: translateY(-148px);
 }
 
 /* Nucleotide bases representation */
@@ -493,6 +493,46 @@ body {
     letter-spacing: 1px;
 }
 
+.special-codons-hint {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(0, 240, 255, 0.12);
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 0.62rem;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.special-codons-hint .title {
+    font-family: var(--font-tech);
+    color: rgba(224, 229, 255, 0.45);
+    margin-bottom: 1px;
+}
+
+.special-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: rgba(224, 229, 255, 0.8);
+}
+
+.special-row span:first-child {
+    font-family: var(--font-tech);
+    font-weight: bold;
+    font-size: 0.58rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+.badge-gold { color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.5); background: rgba(255, 215, 0, 0.12); }
+.badge-freeze { color: #00f0ff; border: 1px solid rgba(0, 240, 255, 0.5); background: rgba(0, 240, 255, 0.12); }
+.badge-repair { color: #39ff14; border: 1px solid rgba(57, 255, 20, 0.5); background: rgba(57, 255, 20, 0.12); }
+.badge-hazard { color: #ff007f; border: 1px solid rgba(255, 0, 127, 0.5); background: rgba(255, 0, 127, 0.12); }
+.badge-vred { color: #ff3131; border: 1px solid rgba(255, 49, 49, 0.5); background: rgba(255, 49, 49, 0.12); }
+.badge-vgreen { color: #39ff14; border: 1px solid rgba(57, 255, 20, 0.5); background: rgba(57, 255, 20, 0.12); }
+.badge-vyellow { color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.5); background: rgba(255, 215, 0, 0.12); }
+
 /* Center Panel (Canvas Container) */
 .canvas-container {
     flex-grow: 1;
@@ -505,6 +545,12 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.canvas-container.overdrive-mode {
+    border-color: var(--yellow);
+    box-shadow: inset 0 0 45px rgba(255, 215, 0, 0.22), 0 0 25px rgba(255, 215, 0, 0.35);
 }
 
 #game-canvas {
@@ -662,25 +708,104 @@ body {
 }
 
 .integrity-box {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
-.integrity-box .label {
+.integrity-box .label,
+.fever-box .label,
+.brake-box .label {
     font-size: 0.65rem;
     font-family: var(--font-tech);
     color: rgba(224, 229, 255, 0.5);
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     display: block;
+}
+
+.fever-box,
+.brake-box {
+    margin-bottom: 10px;
+}
+
+.streak-badge {
+    font-family: var(--font-tech);
+    font-size: 0.58rem;
+    font-weight: bold;
+    color: var(--yellow);
+    background: rgba(255, 215, 0, 0.12);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+}
+
+.brake-badge {
+    font-family: var(--font-tech);
+    font-size: 0.58rem;
+    font-weight: bold;
+    color: var(--cyan);
+    background: rgba(0, 240, 255, 0.12);
+    border: 1px solid rgba(0, 240, 255, 0.4);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-bottom: 4px;
+}
+
+.fever-bar-container {
+    border-color: rgba(255, 215, 0, 0.25);
+}
+
+.fever-bar {
+    background: linear-gradient(90deg, #ff5e00, #ffd700);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+    transition: width 0.2s ease;
+}
+
+.brake-bar-container {
+    border-color: rgba(0, 240, 255, 0.3);
+}
+
+.brake-bar {
+    background: linear-gradient(90deg, #0077ff, #00f0ff);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+    transition: width 0.08s linear;
+}
+
+.brake-bar.braking {
+    background: linear-gradient(90deg, #00f0ff, #ffffff);
+    box-shadow: 0 0 12px rgba(0, 240, 255, 0.9);
+}
+
+.brake-bar.empty {
+    background: linear-gradient(90deg, #ff3131, #ff5e00);
+}
+
+.fever-bar.overdrive {
+    background: linear-gradient(90deg, #ffd700, #00f0ff, #ff007f);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.9);
+    animation: bar-blink 0.25s infinite alternate;
+}
+
+.fever-status {
+    font-size: 0.58rem;
+    font-family: var(--font-tech);
+    font-weight: bold;
+    letter-spacing: 0.8px;
+    color: rgba(224, 229, 255, 0.65);
+}
+
+.fever-status.overdrive-active {
+    color: var(--yellow);
+    text-shadow: var(--yellow-glow);
 }
 
 .progress-bar-container {
     background: rgba(0,0,0,0.5);
     border: 1px solid rgba(0, 240, 255, 0.2);
     border-radius: 4px;
-    height: 14px;
+    height: 12px;
     width: 100%;
     overflow: hidden;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
 }
 
@@ -722,29 +847,29 @@ body {
     background: rgba(0,0,0,0.2);
     border: 1px solid rgba(224, 229, 255, 0.05);
     border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 20px;
+    padding: 10px;
+    margin-bottom: 12px;
 }
 
 .controls-box h3 {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-family: var(--font-tech);
     color: var(--cyan);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     text-transform: uppercase;
 }
 
 .control-grid {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .control-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
 }
 
 .key {
@@ -763,8 +888,8 @@ body {
 
 .options-box {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .control-button {
